@@ -28,6 +28,10 @@
  */
 package edu.upenn.cis.cis455.m1.server;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,13 +39,53 @@ import edu.upenn.cis.cis455.exceptions.HaltException;
 
 public class WebService {
     final static Logger logger = LogManager.getLogger(WebService.class);
+    
+    private static final int DEFAULT_QUEUE_SIZE = 256;
 
     protected HttpListener listener;
+    protected List<Thread> workerThreadPool;
+    
+    private static final String DEFAULT_IP = "0.0.0.0";
+    private static final int DEFAULT_PORT = 45555;
+	private static final String DEFAULT_ROOT = "./www";
+	private static final int DEFAULT_POOL_SIZE = 4;
+	
+	private static String ip;
+	private static int port;
+	private static String root;
+	private static int poolSize;
+	
+	public WebService() {
+		ip = DEFAULT_IP;
+		port = DEFAULT_PORT;
+		root = DEFAULT_ROOT;
+		poolSize = DEFAULT_POOL_SIZE;
+	}
 
     /**
      * Launches the Web server thread pool and the listener
+     * @throws Exception 
      */
-    public void start() {}
+    public void start() {
+    	HttpTaskQueue taskQueue = new HttpTaskQueue();
+    	
+		try {
+			listener = new HttpListener(ip, port, DEFAULT_QUEUE_SIZE, taskQueue);
+			Thread listenerThread = new Thread(listener);
+			listenerThread.start();
+		} catch (IOException e) {
+			logger.error(String.format("Error starting HttpListener: %s", e.getMessage()));
+		}
+		
+		logger.debug("Spinning up worker pool");
+		workerThreadPool = new ArrayList<>();
+    	for (int i = 0; i < WebService.poolSize; i++) {
+    		HttpWorker worker = new HttpWorker(taskQueue);
+    		Thread workerThread = new Thread(worker);
+    		workerThread.start();
+    		workerThreadPool.add(workerThread);
+    	}
+    }
 
     /**
      * Gracefully shut down the server
@@ -54,7 +98,11 @@ public class WebService {
      */
     public void awaitInitialization() {
         logger.info("Initializing server");
-        start();
+        try {
+			start();
+		} catch (Exception e) {
+			logger.error(String.format("Error starting web server: %s", e.getMessage()));
+		}
     }
 
     /**
@@ -93,21 +141,28 @@ public class WebService {
      * Set the root directory of the "static web" files
      */
     public void staticFileLocation(String directory) {
+    	WebService.root = directory;
     }
 
     /**
      * Set the IP address to listen on (default 0.0.0.0)
      */
-    public void ipAddress(String ipAddress) {}
+    public void ipAddress(String ipAddress) {
+    	WebService.ip = ipAddress;
+    }
 
     /**
      * Set the TCP port to listen on (default 45555)
      */
-    public void port(int port) {}
+    public void port(int port) {
+    	WebService.port = port;
+    }
 
     /**
      * Set the size of the thread pool
      */
-    public void threadPool(int threads) {}
+    public void threadPool(int threads) {
+    	WebService.poolSize = threads;
+    }
 
 }

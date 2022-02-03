@@ -40,6 +40,8 @@ import edu.upenn.cis.cis455.m2.interfaces.Session;
 import edu.upenn.cis.cis455.m1.server.WebService;
 
 public class SparkController {
+	
+	private static WebService webService = new WebService();
 
     // We don't want people to use the constructor
     protected SparkController() {}
@@ -152,7 +154,7 @@ public class SparkController {
      * Set the port to listen on (default 45555)
      */
     public static void port(int port) {
-        throw new UnsupportedOperationException();
+        webService.port(port);
     }
 
     /**
@@ -166,14 +168,14 @@ public class SparkController {
      * Set the root directory of the "static web" files
      */
     public static void staticFileLocation(String directory) {
-        throw new UnsupportedOperationException();
+        webService.staticFileLocation(directory);
     }
 
     /**
      * Hold until the server is fully initialized
      */
     public static void awaitInitialization() {
-        throw new UnsupportedOperationException();
+        webService.awaitInitialization();
     }
 
     /**
