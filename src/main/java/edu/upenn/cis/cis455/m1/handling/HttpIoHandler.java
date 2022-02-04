@@ -1,17 +1,13 @@
 package edu.upenn.cis.cis455.m1.handling;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -77,7 +73,7 @@ public class HttpIoHandler {
     	String contentTypeLine = "";
     	String contentLengthLine = "";
     	String bodyTextLine = "";
-    	if (response.bodyRaw().length > 0) {
+    	if (response.bodyRaw() != null && response.bodyRaw().length > 0) {
     		contentTypeLine = String.format("Content-Type: %s \r\n", response.type());
     		contentLengthLine = String.format("Content-Length: %s \r\n", response.bodyRaw().length);
     		if (response.type().contains("text")) {
@@ -85,14 +81,21 @@ public class HttpIoHandler {
     		}
     	}
     	
-    	String responseString = String.format("%s%s%s%s%s", 
+    	String responseString = String.format("%s%s%s%s\r\n%s",
     			firstResponseLine, 
     			dateResponseLine, 
     			contentTypeLine, 
     			contentLengthLine,
     			bodyTextLine);
-    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-    	out.println(responseString);
+
+		OutputStream outputStream = socket.getOutputStream();
+		if (response.type().contains("image")) {
+			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
+			outputStream.write(response.bodyRaw());
+		} else {
+			PrintWriter out = new PrintWriter(outputStream, true);
+			out.println(responseString);
+		}
     	
         return request.persistentConnection();
     }
