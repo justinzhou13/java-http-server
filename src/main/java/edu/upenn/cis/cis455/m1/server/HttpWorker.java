@@ -1,13 +1,16 @@
 package edu.upenn.cis.cis455.m1.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import edu.upenn.cis.cis455.m1.handling.HandlerOrchestrator;
+import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
+import edu.upenn.cis.cis455.m1.handling.HttpResponse;
+import edu.upenn.cis.cis455.m1.interfaces.Request;
+import edu.upenn.cis.cis455.m1.interfaces.Response;
 
 /**
  * Stub class for a thread worker that handles Web requests
@@ -17,9 +20,11 @@ public class HttpWorker implements Runnable {
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
 	private HttpTaskQueue taskQueue;
+	private HandlerOrchestrator handlerOrchestrator;
 	
-	public HttpWorker(HttpTaskQueue taskQueue) {
+	public HttpWorker(HttpTaskQueue taskQueue, HandlerOrchestrator handlerOrchestrator) {
 		this.taskQueue = taskQueue;
+		this.handlerOrchestrator = handlerOrchestrator;
 	}
 
     @Override
@@ -57,12 +62,17 @@ public class HttpWorker implements Runnable {
 	
 	private void process(HttpTask httpTask) throws IOException {
 		Socket socket = httpTask.getSocket();
-		InputStreamReader reader = new InputStreamReader(socket.getInputStream());
-		BufferedReader in = new BufferedReader(reader);
-		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-		String request = in.readLine();
-		out.println("HTTP/1.1 200 OK\r\nContent-Length: 40\r\n\r\n<html><body>Hello world!</body></html>\n");
-		socket.close();
+		
+		Request request = HttpIoHandler.parseRequest(socket);
+		Response response = new HttpResponse();
+		handlerOrchestrator.handle(request, response);
+		
+		if (!HttpIoHandler.sendResponse(socket, request, response)) {
+			socket.close();
+		}
+		//PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		//out.println("HTTP/1.1 200 OK\r\nContent-Length: 40\r\n\r\n<html><body>Hello world!</body></html>\n");
+		//socket.close();
 	}
     
 }

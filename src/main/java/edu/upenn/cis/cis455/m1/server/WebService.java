@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m1.handling.HandlerOrchestrator;
 
 public class WebService {
     final static Logger logger = LogManager.getLogger(WebService.class);
@@ -47,8 +48,8 @@ public class WebService {
     
     private static final String DEFAULT_IP = "0.0.0.0";
     private static final int DEFAULT_PORT = 45555;
-	private static final String DEFAULT_ROOT = "./www";
-	private static final int DEFAULT_POOL_SIZE = 4;
+	private static final String DEFAULT_ROOT = "www";
+	private static final int DEFAULT_POOL_SIZE = 1;
 	
 	private static String ip;
 	private static int port;
@@ -79,8 +80,9 @@ public class WebService {
 		
 		logger.debug("Spinning up worker pool");
 		workerThreadPool = new ArrayList<>();
+		HandlerOrchestrator handlerOrchestrator = new HandlerOrchestrator(root);
     	for (int i = 0; i < WebService.poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue);
+    		HttpWorker worker = new HttpWorker(taskQueue, handlerOrchestrator);
     		Thread workerThread = new Thread(worker);
     		workerThread.start();
     		workerThreadPool.add(workerThread);
