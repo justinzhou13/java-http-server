@@ -89,13 +89,8 @@ public class HttpIoHandler {
     			bodyTextLine);
 
 		OutputStream outputStream = socket.getOutputStream();
-		if (response.type().contains("image")) {
-			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
-			outputStream.write(response.bodyRaw());
-		} else {
-			PrintWriter out = new PrintWriter(outputStream, true);
-			out.println(responseString);
-		}
+	    outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
+	    outputStream.write(response.bodyRaw());
     	
         return request.persistentConnection();
     }
