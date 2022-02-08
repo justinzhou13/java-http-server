@@ -161,7 +161,7 @@ public class SparkController {
      * Set the size of the thread pool
      */
     public static void threadPool(int threads) {
-        throw new UnsupportedOperationException();
+        webService.threadPool(threads);
     }
 
     /**

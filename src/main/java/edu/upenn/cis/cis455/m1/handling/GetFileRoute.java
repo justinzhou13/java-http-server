@@ -12,13 +12,13 @@ import edu.upenn.cis.cis455.m1.interfaces.Request;
 import edu.upenn.cis.cis455.m1.interfaces.Response;
 import edu.upenn.cis.cis455.m1.interfaces.Route;
 
-public class GetFileHandler implements Route {
+public class GetFileRoute implements Route {
 	
-	static final Logger logger = LogManager.getLogger(GetFileHandler.class);
+	static final Logger logger = LogManager.getLogger(GetFileRoute.class);
 	
 	private final String root;
 	
-	public GetFileHandler(String root) {
+	public GetFileRoute(String root) {
 		this.root = root;
 	}
 	

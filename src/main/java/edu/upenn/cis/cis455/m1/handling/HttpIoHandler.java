@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,7 +86,10 @@ public class HttpIoHandler {
 
 		OutputStream outputStream = socket.getOutputStream();
 	    outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
-	    outputStream.write(response.bodyRaw());
+
+		if (response.bodyRaw() != null) {
+			outputStream.write(response.bodyRaw());
+		}
     	
         return request.persistentConnection();
     }

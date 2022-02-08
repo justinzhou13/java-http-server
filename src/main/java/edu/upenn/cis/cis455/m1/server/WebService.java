@@ -30,13 +30,17 @@ package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import edu.upenn.cis.cis455.m1.handling.ShutdownRoute;
+import edu.upenn.cis.cis455.m1.interfaces.Route;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.handling.HandlerOrchestrator;
+import edu.upenn.cis.cis455.m1.handling.RouteOrchestrator;
 
 public class WebService {
     final static Logger logger = LogManager.getLogger(WebService.class);
@@ -55,12 +59,18 @@ public class WebService {
 	private static int port;
 	private static String root;
 	private static int poolSize;
-	
+
+    private RouteOrchestrator routeOrchestrator;
+
 	public WebService() {
 		ip = DEFAULT_IP;
 		port = DEFAULT_PORT;
 		root = DEFAULT_ROOT;
 		poolSize = DEFAULT_POOL_SIZE;
+
+        routeOrchestrator = new RouteOrchestrator(root);
+        ShutdownRoute shutdownRoute = new ShutdownRoute();
+        routeOrchestrator.addRoute("GET", "/shutdown", shutdownRoute);
 	}
 
     /**
@@ -80,9 +90,8 @@ public class WebService {
 		
 		logger.debug("Spinning up worker pool");
 		workerThreadPool = new ArrayList<>();
-		HandlerOrchestrator handlerOrchestrator = new HandlerOrchestrator(root);
     	for (int i = 0; i < WebService.poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, handlerOrchestrator);
+    		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator);
     		Thread workerThread = new Thread(worker);
     		workerThread.start();
     		workerThreadPool.add(workerThread);

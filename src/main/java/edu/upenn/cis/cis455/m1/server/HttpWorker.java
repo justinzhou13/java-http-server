@@ -1,12 +1,11 @@
 package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import edu.upenn.cis.cis455.m1.handling.HandlerOrchestrator;
+import edu.upenn.cis.cis455.m1.handling.RouteOrchestrator;
 import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
 import edu.upenn.cis.cis455.m1.handling.HttpResponse;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
@@ -20,11 +19,11 @@ public class HttpWorker implements Runnable {
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
 	private HttpTaskQueue taskQueue;
-	private HandlerOrchestrator handlerOrchestrator;
+	private RouteOrchestrator routeOrchestrator;
 	
-	public HttpWorker(HttpTaskQueue taskQueue, HandlerOrchestrator handlerOrchestrator) {
+	public HttpWorker(HttpTaskQueue taskQueue, RouteOrchestrator routeOrchestrator) {
 		this.taskQueue = taskQueue;
-		this.handlerOrchestrator = handlerOrchestrator;
+		this.routeOrchestrator = routeOrchestrator;
 	}
 
     @Override
@@ -65,7 +64,7 @@ public class HttpWorker implements Runnable {
 		
 		Request request = HttpIoHandler.parseRequest(socket);
 		Response response = new HttpResponse();
-		handlerOrchestrator.handle(request, response);
+		routeOrchestrator.applyRoutes(request, response);
 		
 		if (!HttpIoHandler.sendResponse(socket, request, response)) {
 			socket.close();
