@@ -110,11 +110,7 @@ public class HttpRequest extends Request {
 
 	@Override
 	public Set<String> headers() {
-		Set<String> out = new HashSet<>();
-		for (Entry<String, String> entry : headers.entrySet()) {
-			out.add(String.format("%s:%s", entry.getKey(), entry.getValue()));
-		}
-		return out;
+		return headers.keySet();
 	}
 
 }
