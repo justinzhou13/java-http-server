@@ -76,9 +76,6 @@ public class HttpIoHandler {
     	if (response.bodyRaw() != null && response.bodyRaw().length > 0) {
     		contentTypeLine = String.format("Content-Type: %s \r\n", response.type());
     		contentLengthLine = String.format("Content-Length: %s \r\n", response.bodyRaw().length);
-    		if (response.type().contains("text")) {
-    			bodyTextLine = response.body();
-    		}
     	}
     	
     	String responseString = String.format("%s%s%s%s\r\n%s",
