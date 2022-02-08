@@ -3,6 +3,8 @@ package edu.upenn.cis.cis455.m1.handling;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
 import edu.upenn.cis.cis455.m1.interfaces.Response;
 
+import static edu.upenn.cis.cis455.m1.handling.HttpComplianceHandler.isCompliant;
+
 public class HandlerOrchestrator {
 
 	private GetFileHandler getFileHandler;
@@ -12,7 +14,9 @@ public class HandlerOrchestrator {
 	}
 
 	public void handle(Request req, Response res) {
-		handleFileRequest(req, res);
+		if (isCompliant(req, res)) {
+			handleFileRequest(req, res);
+		}
 	}
 
 	public void handleFileRequest(Request req, Response res) {

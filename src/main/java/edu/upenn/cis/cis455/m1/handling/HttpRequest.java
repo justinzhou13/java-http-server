@@ -16,20 +16,20 @@ public class HttpRequest extends Request {
 	
     final static Logger logger = LogManager.getLogger(HttpIoHandler.class);
 	
-	private String requestMethod;
-	private String protocol;
-	private String uri;
-	private String host;
-	private String userAgent;
-	private Map<String, String> headers;
+	private final String requestMethod;
+	private final String protocol;
+	private final String uri;
+	private final String host;
+	private final String userAgent;
+	private final Map<String, String> headers;
 	
 	
 	public HttpRequest(Map<String, String> pre, Map<String, List<String>> parms, Map<String, String> headers) {
-		this.requestMethod = pre.get("method");
-		this.protocol = pre.get("protocolVersion");
-		this.uri = pre.get("uri");
-		this.host = headers.containsKey("host") ? headers.get("host") : null;
-		this.userAgent = headers.containsKey("user-agent") ? headers.get("user-agent") : null;
+		this.requestMethod = pre.getOrDefault("method", null);
+		this.protocol = pre.getOrDefault("protocolVersion", null);
+		this.uri = pre.getOrDefault("uri", null);
+		this.host = headers.getOrDefault("host", null);
+		this.userAgent = headers.getOrDefault("user-agent", null);
 		this.headers = Collections.unmodifiableMap(headers);
 	}
 
