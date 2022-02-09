@@ -57,7 +57,7 @@ public class WebService {
 	private int port;
 	private String root;
 	private int poolSize;
-    private ShutdownStateWrapper shutdownStateWrapper;
+    private final ShutdownStateWrapper shutdownStateWrapper;
 
     private RouteOrchestrator routeOrchestrator;
 
@@ -102,7 +102,9 @@ public class WebService {
      * Gracefully shut down the server
      */
     public void stop() {
-        shutdownStateWrapper.setShouldShutDown(true);
+        synchronized (shutdownStateWrapper) {
+            shutdownStateWrapper.setShouldShutDown(true);
+        }
     }
 
     /**
