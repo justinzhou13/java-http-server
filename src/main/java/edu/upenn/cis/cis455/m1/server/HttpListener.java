@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,8 +22,9 @@ public class HttpListener implements Runnable {
 	
 	private final int queueSize;
 	private final HttpTaskQueue taskQueue;
+	private final ShutdownStateWrapper shutdownStateWrapper;
 	
-	public HttpListener(String ip, int port, int queueSize, HttpTaskQueue taskQueue) throws IOException {
+	public HttpListener(String ip, int port, int queueSize, HttpTaskQueue taskQueue, ShutdownStateWrapper shutdownStateWrapper) throws IOException {
 		if (queueSize <= 0) {
 			throw new IllegalArgumentException("Queue size must be greater than 0");
 		}
@@ -31,11 +34,12 @@ public class HttpListener implements Runnable {
 		
 		this.queueSize = queueSize;
 		this.taskQueue = taskQueue;
+		this.shutdownStateWrapper = shutdownStateWrapper;
 	}
 
     @Override
     public void run(){
-        while (true) {
+        while (!shutdownStateWrapper.isShouldShutDown()) {
         	try {
         		Socket socket = serverSocket.accept();
         		HttpTask httpTask = new HttpTask(socket);
@@ -44,6 +48,7 @@ public class HttpListener implements Runnable {
         		System.out.println(e.toString());
         	}
         }
+		logger.info("Attempting to shut down http listener");
     }
     
     private void addToQueue(HttpTask httpTask) throws InterruptedException {

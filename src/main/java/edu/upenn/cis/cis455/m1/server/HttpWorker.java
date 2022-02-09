@@ -2,6 +2,8 @@ package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
 import java.net.Socket;
+
+import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,29 +22,35 @@ public class HttpWorker implements Runnable {
 	
 	private HttpTaskQueue taskQueue;
 	private RouteOrchestrator routeOrchestrator;
+	private ShutdownStateWrapper shutdownStateWrapper;
 	
-	public HttpWorker(HttpTaskQueue taskQueue, RouteOrchestrator routeOrchestrator) {
+	public HttpWorker(HttpTaskQueue taskQueue, RouteOrchestrator routeOrchestrator, ShutdownStateWrapper shutdownStateWrapper) {
 		this.taskQueue = taskQueue;
 		this.routeOrchestrator = routeOrchestrator;
+		this.shutdownStateWrapper = shutdownStateWrapper;
 	}
 
     @Override
     public void run() {
     	logger.debug("Running worker");
-        while (true) {
+        while (!shutdownStateWrapper.isShouldShutDown()) {
         	try {
         		HttpTask httpTask = readFromQueue();
-        		process(httpTask);
+        		if (httpTask != null) {
+					process(httpTask);
+		        }
         		
         	} catch (Exception e) {
         		logger.error(String.format("Error processing HttpTasks from queue: %s", e.getMessage()));
         	}
         }
+		logger.info("Shutting down worker");
+		return;
     }
     
 	private HttpTask readFromQueue() throws InterruptedException {
 		logger.debug("Reading from queue");
-		while (true) {
+		while (!shutdownStateWrapper.isShouldShutDown()) {
 			synchronized (taskQueue) {
 				if (taskQueue.isEmpty()) {
 					//If the queue is empty, we push the current thread to waiting state. Way to avoid polling.
@@ -57,6 +65,7 @@ public class HttpWorker implements Runnable {
 				}
 			}
 		}
+		return null;
 	}
 	
 	private void process(HttpTask httpTask) throws IOException {
@@ -69,9 +78,6 @@ public class HttpWorker implements Runnable {
 		if (!HttpIoHandler.sendResponse(socket, request, response)) {
 			socket.close();
 		}
-		//PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-		//out.println("HTTP/1.1 200 OK\r\nContent-Length: 40\r\n\r\n<html><body>Hello world!</body></html>\n");
-		//socket.close();
 	}
     
 }

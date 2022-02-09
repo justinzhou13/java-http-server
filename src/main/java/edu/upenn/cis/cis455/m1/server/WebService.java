@@ -30,12 +30,10 @@ package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import edu.upenn.cis.cis455.m1.handling.ShutdownRoute;
-import edu.upenn.cis.cis455.m1.interfaces.Route;
+import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,12 +51,13 @@ public class WebService {
     private static final String DEFAULT_IP = "0.0.0.0";
     private static final int DEFAULT_PORT = 45555;
 	private static final String DEFAULT_ROOT = "www";
-	private static final int DEFAULT_POOL_SIZE = 1;
+	private static final int DEFAULT_POOL_SIZE = 8;
 	
-	private static String ip;
-	private static int port;
-	private static String root;
-	private static int poolSize;
+	private String ip;
+	private int port;
+	private String root;
+	private int poolSize;
+    private ShutdownStateWrapper shutdownStateWrapper;
 
     private RouteOrchestrator routeOrchestrator;
 
@@ -69,7 +68,8 @@ public class WebService {
 		poolSize = DEFAULT_POOL_SIZE;
 
         routeOrchestrator = new RouteOrchestrator(root);
-        ShutdownRoute shutdownRoute = new ShutdownRoute();
+        shutdownStateWrapper = new ShutdownStateWrapper();
+        ShutdownRoute shutdownRoute = new ShutdownRoute(shutdownStateWrapper);
         routeOrchestrator.addRoute("GET", "/shutdown", shutdownRoute);
 	}
 
@@ -81,7 +81,7 @@ public class WebService {
     	HttpTaskQueue taskQueue = new HttpTaskQueue();
     	
 		try {
-			listener = new HttpListener(ip, port, DEFAULT_QUEUE_SIZE, taskQueue);
+			listener = new HttpListener(ip, port, DEFAULT_QUEUE_SIZE, taskQueue, shutdownStateWrapper);
 			Thread listenerThread = new Thread(listener);
 			listenerThread.start();
 		} catch (IOException e) {
@@ -90,8 +90,8 @@ public class WebService {
 		
 		logger.debug("Spinning up worker pool");
 		workerThreadPool = new ArrayList<>();
-    	for (int i = 0; i < WebService.poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator);
+    	for (int i = 0; i < poolSize; i++) {
+    		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator, shutdownStateWrapper);
     		Thread workerThread = new Thread(worker);
     		workerThread.start();
     		workerThreadPool.add(workerThread);
@@ -101,7 +101,9 @@ public class WebService {
     /**
      * Gracefully shut down the server
      */
-    public void stop() {}
+    public void stop() {
+        shutdownStateWrapper.setShouldShutDown(true);
+    }
 
     /**
      * Hold until the server is fully initialized.
@@ -152,28 +154,28 @@ public class WebService {
      * Set the root directory of the "static web" files
      */
     public void staticFileLocation(String directory) {
-    	WebService.root = directory;
+    	this.root = directory;
     }
 
     /**
      * Set the IP address to listen on (default 0.0.0.0)
      */
     public void ipAddress(String ipAddress) {
-    	WebService.ip = ipAddress;
+    	this.ip = ipAddress;
     }
 
     /**
      * Set the TCP port to listen on (default 45555)
      */
     public void port(int port) {
-    	WebService.port = port;
+    	this.port = port;
     }
 
     /**
      * Set the size of the thread pool
      */
     public void threadPool(int threads) {
-    	WebService.poolSize = threads;
+    	this.poolSize = threads;
     }
 
 }

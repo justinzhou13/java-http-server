@@ -58,7 +58,7 @@ public class RouteOrchestrator {
 
 	public void addRoute(String httpMethod, String uri, Route route) {
 		try {
-			routes.get("httpMethod").put(uri, route);
+			routes.get(httpMethod).put(uri, route);
 		} catch (NullPointerException e) {
 			logger.error("Attempted to add a route that wasn't a valid HTTP method");
 		}

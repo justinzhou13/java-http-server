@@ -182,7 +182,7 @@ public class SparkController {
      * Gracefully shut down the server
      */
     public static void stop() {
-        throw new UnsupportedOperationException();
+        webService.stop();
     }
 
     public static String createSession() {
