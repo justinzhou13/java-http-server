@@ -41,7 +41,7 @@ import edu.upenn.cis.cis455.m1.server.WebService;
 
 public class SparkController {
 	
-	private static WebService webService = new WebService();
+	private static final WebService webService = new WebService();
 
     // We don't want people to use the constructor
     protected SparkController() {}
@@ -147,7 +147,7 @@ public class SparkController {
      * Set the IP address to listen on (default 0.0.0.0)
      */
     public static void ipAddress(String ipAddress) {
-        throw new UnsupportedOperationException();
+        webService.ipAddress(ipAddress);
     }
 
     /**

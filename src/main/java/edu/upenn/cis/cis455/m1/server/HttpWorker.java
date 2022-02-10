@@ -2,6 +2,7 @@ package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Map;
 
 import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
@@ -20,14 +21,24 @@ public class HttpWorker implements Runnable {
 	
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
-	private HttpTaskQueue taskQueue;
-	private RouteOrchestrator routeOrchestrator;
-	private ShutdownStateWrapper shutdownStateWrapper;
+	private final HttpTaskQueue taskQueue;
+	private final RouteOrchestrator routeOrchestrator;
+	private final ShutdownStateWrapper shutdownStateWrapper;
+	private final Map<String, String> workerNameToStatuses;
+	private String workerThreadName;
 	
-	public HttpWorker(HttpTaskQueue taskQueue, RouteOrchestrator routeOrchestrator, ShutdownStateWrapper shutdownStateWrapper) {
+	public HttpWorker(HttpTaskQueue taskQueue,
+	                  RouteOrchestrator routeOrchestrator,
+	                  ShutdownStateWrapper shutdownStateWrapper,
+	                  Map<String, String> workerNameToStatuses) {
 		this.taskQueue = taskQueue;
 		this.routeOrchestrator = routeOrchestrator;
 		this.shutdownStateWrapper = shutdownStateWrapper;
+		this.workerNameToStatuses = workerNameToStatuses;
+	}
+
+	public void setWorkerThreadName(String workerThreadName) {
+		this.workerThreadName = workerThreadName;
 	}
 
     @Override
@@ -72,11 +83,19 @@ public class HttpWorker implements Runnable {
 		Socket socket = httpTask.getSocket();
 		
 		Request request = HttpIoHandler.parseRequest(socket);
+		updateControlPanelStatus(request.url());
 		Response response = new HttpResponse();
 		routeOrchestrator.applyRoutes(request, response);
 		
 		if (!HttpIoHandler.sendResponse(socket, request, response)) {
 			socket.close();
+		}
+		updateControlPanelStatus(WebService.WORKER_WAITING_LABEL);
+	}
+
+	private void updateControlPanelStatus(String status) {
+		synchronized (workerNameToStatuses) {
+			workerNameToStatuses.put(workerThreadName, status);
 		}
 	}
     

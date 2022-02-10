@@ -62,8 +62,7 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String url() {
-		// TODO Auto-generated method stub
-		return null;
+		return host + uri;
 	}
 
 	@Override

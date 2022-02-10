@@ -30,8 +30,11 @@ package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import edu.upenn.cis.cis455.m1.handling.ControlPanelRoute;
 import edu.upenn.cis.cis455.m1.handling.ShutdownRoute;
 import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
@@ -42,16 +45,19 @@ import edu.upenn.cis.cis455.m1.handling.RouteOrchestrator;
 
 public class WebService {
     final static Logger logger = LogManager.getLogger(WebService.class);
+
+    public static final String WORKER_WAITING_LABEL = "waiting";
     
     private static final int DEFAULT_QUEUE_SIZE = 256;
-
-    protected HttpListener listener;
-    protected List<HttpWorker> httpWorkers;
     
     private static final String DEFAULT_IP = "0.0.0.0";
     private static final int DEFAULT_PORT = 45555;
 	private static final String DEFAULT_ROOT = "www";
 	private static final int DEFAULT_POOL_SIZE = 8;
+
+    protected HttpListener listener;
+    protected List<HttpWorker> httpWorkers;
+    private final Map<String, String> workerThreadNameToStatus;
 	
 	private String ip;
 	private int port;
@@ -68,9 +74,13 @@ public class WebService {
 		poolSize = DEFAULT_POOL_SIZE;
 
         routeOrchestrator = new RouteOrchestrator(root);
+
         shutdownStateWrapper = new ShutdownStateWrapper();
         ShutdownRoute shutdownRoute = new ShutdownRoute(shutdownStateWrapper);
         routeOrchestrator.addRoute("GET", "/shutdown", shutdownRoute);
+
+        workerThreadNameToStatus = new HashMap<>();
+        routeOrchestrator.addRoute("GET", "/control", new ControlPanelRoute(workerThreadNameToStatus));
 	}
 
     /**
@@ -91,12 +101,17 @@ public class WebService {
 		logger.debug("Spinning up worker pool");
 		httpWorkers = new ArrayList<>();
     	for (int i = 0; i < poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator, shutdownStateWrapper);
+    		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator, shutdownStateWrapper, workerThreadNameToStatus);
             httpWorkers.add(worker);
 
     		Thread workerThread = new Thread(worker);
     		workerThread.start();
-    	}
+
+            synchronized (workerThreadNameToStatus) {
+                workerThreadNameToStatus.put(workerThread.toString(), WORKER_WAITING_LABEL);
+            }
+            worker.setWorkerThreadName(workerThread.toString());
+        }
     }
 
     /**

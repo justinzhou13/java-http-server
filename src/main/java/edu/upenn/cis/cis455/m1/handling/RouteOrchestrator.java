@@ -31,6 +31,7 @@ public class RouteOrchestrator {
 	}
 
 	public void applyRoutes(Request req, Response res) {
+		logger.info(String.format("Requested %s", req.uri()));
 		if (isCompliant(req, res)) {
 			boolean lookingForFile = req.requestMethod().equals("GET")
 					&& !routes.get("GET").containsKey(req.uri());

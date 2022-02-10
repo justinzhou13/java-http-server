@@ -37,7 +37,7 @@ public class GetFileRoute implements Route {
 		if (!req.requestMethod().equals(HttpRequestMethod.GET.getValue())) {
 			throw new IllegalArgumentException("GetFileHandler called without a get method");
 		}
-		
+
 		String uri = req.uri();
 		String fileLocationString;
 		if (uri.charAt(uri.length() - 1) == '/') {
