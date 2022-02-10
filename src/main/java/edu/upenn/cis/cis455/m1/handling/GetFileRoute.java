@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import edu.upenn.cis.cis455.exceptions.HaltException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -67,7 +68,7 @@ public class GetFileRoute implements Route {
 			handleUnmodifiedSinceIfNecessary(lastModifiedTime, req, res);
 		} catch (InvalidPathException | IOException e) {
 			logger.error(String.format("Could not get file for path %s", fileLocationString));
-			fileNotFound(res);
+			throw new HaltException(404);
 		}
 		return null;
 	}

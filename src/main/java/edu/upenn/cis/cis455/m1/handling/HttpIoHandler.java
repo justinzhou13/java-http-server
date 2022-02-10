@@ -30,6 +30,7 @@ public class HttpIoHandler {
 		statusCodeToDescription.put(412, "Precondition Failed");
     	statusCodeToDescription.put(404, "Not Found");
     	statusCodeToDescription.put(400, "Bad Request");
+	    statusCodeToDescription.put(501, "Not Implemented");
     }
     
     public static Request parseRequest(Socket socket) throws IOException {
@@ -50,7 +51,19 @@ public class HttpIoHandler {
      * connections).
      */
     public static boolean sendException(Socket socket, Request request, HaltException except) {
-        return true;
+		String firstResponseLine = firstResponseLine(request, except.statusCode());
+		String dateResponseLine = dateResponseLine();
+
+		String responseString = String.format("%s%s", firstResponseLine, dateResponseLine);
+
+		try {
+			OutputStream outputStream = socket.getOutputStream();
+			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
+		} catch (IOException e) {
+			logger.error("Error writing exception to socket");
+		}
+
+	    return request != null && request.persistentConnection();
     }
 
     /**
@@ -58,18 +71,10 @@ public class HttpIoHandler {
      * (for persistent connections).
      * @throws IOException 
      */
-    public static boolean sendResponse(Socket socket, Request request, Response response) throws IOException {
-    	String protocol = request.protocol();
+    public static boolean sendResponse(Socket socket, Request request, Response response) {
     	int responseStatus = response.status();
-    	String statusDescription = statusCodeToDescription.get(responseStatus);
-    	String firstResponseLine = String.format("%s %d %s \r\n", protocol, responseStatus, statusDescription);
-    	
-    	DateTimeFormatter httpDateFormatter = DateTimeFormatter
-				.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
-				.withZone(ZoneId.of("GMT"));
-    	LocalDateTime cur = LocalDateTime.now();
-    	String dateString = httpDateFormatter.format(cur);
-    	String dateResponseLine = String.format("Date: %s \r\n", dateString);
+    	String firstResponseLine = firstResponseLine(request, responseStatus);
+    	String dateResponseLine = dateResponseLine();
     	
     	String contentTypeLine = "";
     	String contentLengthLine = "";
@@ -86,13 +91,32 @@ public class HttpIoHandler {
     			contentLengthLine,
     			bodyTextLine);
 
-		OutputStream outputStream = socket.getOutputStream();
-	    outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
+		try {
+			OutputStream outputStream = socket.getOutputStream();
+			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
 
-		if (response.bodyRaw() != null) {
-			outputStream.write(response.bodyRaw());
+			if (response.bodyRaw() != null) {
+				outputStream.write(response.bodyRaw());
+			}
+		} catch (IOException e) {
+			logger.error("Error writing http response to socket");
 		}
-    	
-        return request.persistentConnection();
+
+	    return request != null && request.persistentConnection();
     }
+
+	private static String firstResponseLine(Request request, int statusCode) {
+		String protocol = request != null ? request.protocol() : "HTTP/1.1";
+		String statusDescription = statusCodeToDescription.get(statusCode);
+		return String.format("%s %d %s \r\n", protocol, statusCode, statusDescription);
+	}
+
+	private static String dateResponseLine() {
+		DateTimeFormatter httpDateFormatter = DateTimeFormatter
+				.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
+				.withZone(ZoneId.of("GMT"));
+		LocalDateTime cur = LocalDateTime.now();
+		String dateString = httpDateFormatter.format(cur);
+		return String.format("Date: %s \r\n", dateString);
+	}
 }

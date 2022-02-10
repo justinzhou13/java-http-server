@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
 
+import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,17 +80,32 @@ public class HttpWorker implements Runnable {
 		return null;
 	}
 	
-	private void process(HttpTask httpTask) throws IOException {
+	private void process(HttpTask httpTask) {
 		Socket socket = httpTask.getSocket();
-		
-		Request request = HttpIoHandler.parseRequest(socket);
+
+		Request request = null;
+		try {
+			request = HttpIoHandler.parseRequest(socket);
+		} catch (IOException e) {
+			logger.error(e.toString());
+			closeSocket(socket);
+			return;
+		}
+
 		updateControlPanelStatus(request.url());
 		Response response = new HttpResponse();
-		routeOrchestrator.applyRoutes(request, response);
-		
-		if (!HttpIoHandler.sendResponse(socket, request, response)) {
-			socket.close();
+
+		try {
+			routeOrchestrator.applyRoutes(request, response);
+			if (!HttpIoHandler.sendResponse(socket, request, response)) {
+				closeSocket(socket);
+			}
+		} catch (HaltException e) {
+			if (!HttpIoHandler.sendException(socket, request, e)) {
+				closeSocket(socket);
+			};
 		}
+
 		updateControlPanelStatus(WebService.WORKER_WAITING_LABEL);
 	}
 
@@ -98,5 +114,12 @@ public class HttpWorker implements Runnable {
 			workerNameToStatuses.put(workerThreadName, status);
 		}
 	}
-    
+
+	private void closeSocket(Socket socket) {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			logger.error(e.toString());
+		}
+	}
 }

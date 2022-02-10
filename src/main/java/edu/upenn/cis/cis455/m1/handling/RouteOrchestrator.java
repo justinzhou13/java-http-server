@@ -1,5 +1,6 @@
 package edu.upenn.cis.cis455.m1.handling;
 
+import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
 import edu.upenn.cis.cis455.m1.interfaces.Response;
 import edu.upenn.cis.cis455.m1.interfaces.Route;
@@ -30,25 +31,27 @@ public class RouteOrchestrator {
 		routes.put("OPTIONS", new HashMap<>());
 	}
 
-	public void applyRoutes(Request req, Response res) {
+	public void applyRoutes(Request req, Response res) throws HaltException {
 		logger.info(String.format("Requested %s", req.uri()));
 		if (isCompliant(req, res)) {
 			boolean lookingForFile = req.requestMethod().equals("GET")
 					&& !routes.get("GET").containsKey(req.uri());
 			if (lookingForFile) {
 				handleFileRequest(req, res);
-			} else {
-				boolean routeExists = routes.get(req.requestMethod()).containsKey(req.uri());
-				if (routeExists) {
-					Route route = routes.get(req.requestMethod()).get(req.uri());
-					try {
-						route.handle(req, res);
-					} catch (Exception e){
-						logger.error(e.getMessage());
-					}
-				} else {
-					//TODO 404 here
-				}
+				return;
+			}
+
+			Map<String, Route> routesForMethod = routes.get(req.requestMethod());
+			if (routesForMethod == null) throw new HaltException(501);
+
+			Route route = routesForMethod.get(req.uri());
+			if (route == null) throw new HaltException(404);
+
+			try {
+				route.handle(req, res);
+			} catch (Exception e){
+				logger.error(e.getMessage());
+				throw new HaltException(500);
 			}
 		}
 	}
