@@ -9,6 +9,9 @@ import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.LogManager;
@@ -80,12 +83,8 @@ public class GetFileRoute implements Route {
 
 	private void handleModifiedSinceIfNecessary(Path filePath, Request req, Response res) {
 		try {
-			if (req.headers("if-modified-since") != null) {
-				DateTimeFormatter httpDateFormatter = DateTimeFormatter
-						.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
-						.withZone(ZoneId.of("GMT"));
-				LocalDateTime ifModifiedSinceTime = LocalDateTime.parse(req.headers("if-modified-since"), httpDateFormatter);
-
+			LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
+			if (ifModifiedSinceTime != null) {
 				BasicFileAttributes basicFileAttributes = Files.readAttributes(filePath, BasicFileAttributes.class);
 				FileTime fileTime = basicFileAttributes.lastModifiedTime();
 				LocalDateTime lastModifiedTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneId.of("GMT"));
@@ -98,5 +97,33 @@ public class GetFileRoute implements Route {
 		} catch (Exception e) {
 			logger.error("Failed to read file attributes for file");
 		}
+	}
+
+	private LocalDateTime attemptParseModifiedSinceHeader(String ifModifiedSince) {
+		if (ifModifiedSince == null) {
+			return null;
+		}
+
+		List<DateTimeFormatter> dateTimeFormatterList = new ArrayList<>();
+		dateTimeFormatterList.add(DateTimeFormatter
+				.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
+				.withZone(ZoneId.of("GMT")));
+		dateTimeFormatterList.add(DateTimeFormatter
+				.ofPattern("EEEE, dd-MMM-yy HH:mm:ss z", Locale.ENGLISH)
+				.withZone(ZoneId.of("GMT")));
+		dateTimeFormatterList.add(DateTimeFormatter
+				.ofPattern("EEE MMM dd HH:mm:ss yyyy", Locale.ENGLISH)
+				.withZone(ZoneId.of("GMT")));
+
+		for (DateTimeFormatter formatter : dateTimeFormatterList) {
+			try {
+				return LocalDateTime.parse(ifModifiedSince, formatter);
+			} catch (DateTimeParseException e) {
+				logger.info(String.format("ifModifiedSince header %s could not be parsed by %s",
+						ifModifiedSince,
+						formatter.toString()));
+			}
+		}
+		return null;
 	}
 }
