@@ -3,6 +3,7 @@ package edu.upenn.cis.cis455.m1.handling;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -57,11 +58,15 @@ public class GetFileRoute implements Route {
 			byte[] fileData = Files.readAllBytes(filePath);
 			res.bodyRaw(fileData);
 
-			successfullyProcessed(res);
+			//handling modified-since and unmodified-since headers
+			BasicFileAttributes basicFileAttributes = Files.readAttributes(filePath, BasicFileAttributes.class);
+			FileTime fileTime = basicFileAttributes.lastModifiedTime();
+			LocalDateTime lastModifiedTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneId.of("GMT"));
 
-			handleModifiedSinceIfNecessary(filePath, req, res);
-		} catch (Exception e) {
-			logger.error(e.getStackTrace());
+			handleModifiedSinceIfNecessary(lastModifiedTime, req, res);
+			handleUnmodifiedSinceIfNecessary(lastModifiedTime, req, res);
+		} catch (InvalidPathException | IOException e) {
+			logger.error(String.format("Could not get file for path %s", fileLocationString));
 			fileNotFound(res);
 		}
 		return null;
@@ -70,10 +75,6 @@ public class GetFileRoute implements Route {
 	private void fileNotFound(Response res) {
 		res.status(404);
 	}
-	
-	private void successfullyProcessed(Response res) {
-		res.status(200);
-	}
 
 	private void notModified(Response res) {
 		res.status(304);
@@ -81,21 +82,23 @@ public class GetFileRoute implements Route {
 		res.bodyRaw(null);
 	}
 
-	private void handleModifiedSinceIfNecessary(Path filePath, Request req, Response res) {
-		try {
-			LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
-			if (ifModifiedSinceTime != null) {
-				BasicFileAttributes basicFileAttributes = Files.readAttributes(filePath, BasicFileAttributes.class);
-				FileTime fileTime = basicFileAttributes.lastModifiedTime();
-				LocalDateTime lastModifiedTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneId.of("GMT"));
+	private void preconditionFailed(Response res) {
+		res.status(412);
+		res.type(null);
+		res.bodyRaw(null);
+	}
 
-				if (lastModifiedTime.isBefore(ifModifiedSinceTime)) {
-					notModified(res);
-				}
-			}
+	private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req, Response res) {
+		LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
+		if (ifModifiedSinceTime != null && lastModifiedTime.isBefore(ifModifiedSinceTime)) {
+			notModified(res);
+		}
+	}
 
-		} catch (Exception e) {
-			logger.error("Failed to read file attributes for file");
+	private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req, Response res) {
+		LocalDateTime ifUnmodifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-unmodified-since"));
+		if (ifUnmodifiedSinceTime != null && lastModifiedTime.isAfter(ifUnmodifiedSinceTime)) {
+				preconditionFailed(res);
 		}
 	}
 
