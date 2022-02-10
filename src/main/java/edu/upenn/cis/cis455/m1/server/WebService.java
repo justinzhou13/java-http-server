@@ -46,7 +46,7 @@ public class WebService {
     private static final int DEFAULT_QUEUE_SIZE = 256;
 
     protected HttpListener listener;
-    protected List<Thread> workerThreadPool;
+    protected List<HttpWorker> httpWorkers;
     
     private static final String DEFAULT_IP = "0.0.0.0";
     private static final int DEFAULT_PORT = 45555;
@@ -89,12 +89,13 @@ public class WebService {
 		}
 		
 		logger.debug("Spinning up worker pool");
-		workerThreadPool = new ArrayList<>();
+		httpWorkers = new ArrayList<>();
     	for (int i = 0; i < poolSize; i++) {
     		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator, shutdownStateWrapper);
+            httpWorkers.add(worker);
+
     		Thread workerThread = new Thread(worker);
     		workerThread.start();
-    		workerThreadPool.add(workerThread);
     	}
     }
 

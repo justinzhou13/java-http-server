@@ -48,7 +48,7 @@ public class HttpListener implements Runnable {
         		System.out.println(e.toString());
         	}
         }
-		logger.info("Attempting to shut down http listener");
+		logger.info("Shutting down down http listener");
     }
     
     private void addToQueue(HttpTask httpTask) throws InterruptedException {

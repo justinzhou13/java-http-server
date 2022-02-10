@@ -26,6 +26,7 @@ public class HttpIoHandler {
     static {
     	statusCodeToDescription = new HashMap<>();
     	statusCodeToDescription.put(200, "OK");
+	    statusCodeToDescription.put(304, "Not Modified");
     	statusCodeToDescription.put(404, "Not Found");
     	statusCodeToDescription.put(400, "Bad Request");
     }
