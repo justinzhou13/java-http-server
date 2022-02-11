@@ -9,7 +9,7 @@ import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import edu.upenn.cis.cis455.m1.handling.RouteOrchestrator;
+import edu.upenn.cis.cis455.m1.handling.RequestHandler;
 import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
 import edu.upenn.cis.cis455.m1.handling.HttpResponse;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
@@ -23,17 +23,17 @@ public class HttpWorker implements Runnable {
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
 	private final HttpTaskQueue taskQueue;
-	private final RouteOrchestrator routeOrchestrator;
+	private final RequestHandler requestHandler;
 	private final ShutdownStateWrapper shutdownStateWrapper;
 	private final Map<String, String> workerNameToStatuses;
 	private String workerThreadName;
 	
 	public HttpWorker(HttpTaskQueue taskQueue,
-	                  RouteOrchestrator routeOrchestrator,
+	                  RequestHandler requestHandler,
 	                  ShutdownStateWrapper shutdownStateWrapper,
 	                  Map<String, String> workerNameToStatuses) {
 		this.taskQueue = taskQueue;
-		this.routeOrchestrator = routeOrchestrator;
+		this.requestHandler = requestHandler;
 		this.shutdownStateWrapper = shutdownStateWrapper;
 		this.workerNameToStatuses = workerNameToStatuses;
 	}
@@ -46,14 +46,22 @@ public class HttpWorker implements Runnable {
     public void run() {
     	logger.debug("Running worker");
         while (!shutdownStateWrapper.isShouldShutDown()) {
+			HttpTask httpTask = null;
         	try {
-        		HttpTask httpTask = readFromQueue();
+        		httpTask = readFromQueue();
         		if (httpTask != null) {
 					process(httpTask);
 		        }
         		
         	} catch (Exception e) {
         		logger.error(String.format("Error processing HttpTasks from queue: %s", e.getMessage()));
+				if (httpTask != null) {
+					try {
+						httpTask.getSocket().close();
+					} catch (IOException ex) {
+						logger.error(ex.getStackTrace());
+					}
+				}
         	}
         }
 		logger.info("Shutting down worker");
@@ -96,7 +104,7 @@ public class HttpWorker implements Runnable {
 		Response response = new HttpResponse();
 
 		try {
-			routeOrchestrator.applyRoutes(request, response);
+			requestHandler.applyRoutes(request, response);
 			if (!HttpIoHandler.sendResponse(socket, request, response)) {
 				closeSocket(socket);
 			}

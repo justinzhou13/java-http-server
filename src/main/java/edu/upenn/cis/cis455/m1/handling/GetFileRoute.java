@@ -23,6 +23,7 @@ import edu.upenn.cis.cis455.HttpRequestMethod;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
 import edu.upenn.cis.cis455.m1.interfaces.Response;
 import edu.upenn.cis.cis455.m1.interfaces.Route;
+import spark.http.matching.Halt;
 
 public class GetFileRoute implements Route {
 	
@@ -72,34 +73,18 @@ public class GetFileRoute implements Route {
 		}
 		return null;
 	}
-	
-	private void fileNotFound(Response res) {
-		res.status(404);
-	}
-
-	private void notModified(Response res) {
-		res.status(304);
-		res.type(null);
-		res.bodyRaw(null);
-	}
-
-	private void preconditionFailed(Response res) {
-		res.status(412);
-		res.type(null);
-		res.bodyRaw(null);
-	}
 
 	private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req, Response res) {
 		LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
 		if (ifModifiedSinceTime != null && lastModifiedTime.isBefore(ifModifiedSinceTime)) {
-			notModified(res);
+			throw new HaltException(304);
 		}
 	}
 
 	private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req, Response res) {
 		LocalDateTime ifUnmodifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-unmodified-since"));
 		if (ifUnmodifiedSinceTime != null && lastModifiedTime.isAfter(ifUnmodifiedSinceTime)) {
-				preconditionFailed(res);
+			throw new HaltException(412);
 		}
 	}
 

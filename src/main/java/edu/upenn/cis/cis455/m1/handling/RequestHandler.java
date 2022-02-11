@@ -12,15 +12,15 @@ import java.util.Map;
 
 import static edu.upenn.cis.cis455.m1.handling.HttpComplianceHandler.isCompliant;
 
-public class RouteOrchestrator {
+public class RequestHandler {
 
-	static final Logger logger = LogManager.getLogger(RouteOrchestrator.class);
+	static final Logger logger = LogManager.getLogger(RequestHandler.class);
 
 	private final Map<String, Map<String, Route>> routes;
 
 	private final GetFileRoute getFileRoute;
 
-	public RouteOrchestrator(String root) {
+	public RequestHandler(String root) {
 		this.getFileRoute = new GetFileRoute(root);
 		this.routes = new HashMap<>();
 		routes.put("GET", new HashMap<>());

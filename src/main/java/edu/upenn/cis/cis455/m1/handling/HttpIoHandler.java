@@ -41,6 +41,7 @@ public class HttpIoHandler {
 		Map<String, List<String>> parms = new HashMap<>();
 		Map<String, String> headers = new HashMap<>();
 		HttpParsing.decodeHeader(in, pre, parms, headers);
+		String ip = socket.getRemoteSocketAddress().toString();
 		
 		return new HttpRequest(pre, parms, headers);
     }

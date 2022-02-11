@@ -22,6 +22,7 @@ public class HttpRequest extends Request {
 	private final String host;
 	private final String userAgent;
 	private final Map<String, String> headers;
+	private final Map<String, List<String>> queryStringParms;
 	
 	
 	public HttpRequest(Map<String, String> pre, Map<String, List<String>> parms, Map<String, String> headers) {
@@ -31,6 +32,7 @@ public class HttpRequest extends Request {
 		this.host = headers.getOrDefault("host", null);
 		this.userAgent = headers.getOrDefault("user-agent", null);
 		this.headers = Collections.unmodifiableMap(headers);
+		this.queryStringParms = parms;
 	}
 
 	@Override
@@ -77,7 +79,7 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String contentType() {
-		return headers.containsKey("content-type") ? headers.get("content-type") : null;
+		return headers.getOrDefault("content-type", null);
 	}
 
 	@Override
@@ -104,7 +106,7 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String headers(String name) {
-		return headers.containsKey(name) ? headers.get(name) : null;
+		return headers.getOrDefault(name, null);
 	}
 
 	@Override

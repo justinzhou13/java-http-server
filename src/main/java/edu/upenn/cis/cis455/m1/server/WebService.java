@@ -35,13 +35,13 @@ import java.util.List;
 import java.util.Map;
 
 import edu.upenn.cis.cis455.m1.handling.ControlPanelRoute;
+import edu.upenn.cis.cis455.m1.handling.RequestHandler;
 import edu.upenn.cis.cis455.m1.handling.ShutdownRoute;
 import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.handling.RouteOrchestrator;
 
 public class WebService {
     final static Logger logger = LogManager.getLogger(WebService.class);
@@ -65,7 +65,7 @@ public class WebService {
 	private int poolSize;
     private final ShutdownStateWrapper shutdownStateWrapper;
 
-    private RouteOrchestrator routeOrchestrator;
+    private RequestHandler requestHandler;
 
 	public WebService() {
 		ip = DEFAULT_IP;
@@ -73,14 +73,14 @@ public class WebService {
 		root = DEFAULT_ROOT;
 		poolSize = DEFAULT_POOL_SIZE;
 
-        routeOrchestrator = new RouteOrchestrator(root);
+        requestHandler = new RequestHandler(root);
 
         shutdownStateWrapper = new ShutdownStateWrapper();
         ShutdownRoute shutdownRoute = new ShutdownRoute(shutdownStateWrapper);
-        routeOrchestrator.addRoute("GET", "/shutdown", shutdownRoute);
+        requestHandler.addRoute("GET", "/shutdown", shutdownRoute);
 
         workerThreadNameToStatus = new HashMap<>();
-        routeOrchestrator.addRoute("GET", "/control", new ControlPanelRoute(workerThreadNameToStatus));
+        requestHandler.addRoute("GET", "/control", new ControlPanelRoute(workerThreadNameToStatus));
 	}
 
     /**
@@ -101,7 +101,7 @@ public class WebService {
 		logger.debug("Spinning up worker pool");
 		httpWorkers = new ArrayList<>();
     	for (int i = 0; i < poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, routeOrchestrator, shutdownStateWrapper, workerThreadNameToStatus);
+    		HttpWorker worker = new HttpWorker(taskQueue, requestHandler, shutdownStateWrapper, workerThreadNameToStatus);
             httpWorkers.add(worker);
 
     		Thread workerThread = new Thread(worker);
