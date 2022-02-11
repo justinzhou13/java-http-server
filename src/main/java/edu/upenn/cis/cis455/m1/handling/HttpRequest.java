@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.upenn.cis.cis455.exceptions.HaltException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,7 +28,11 @@ public class HttpRequest extends Request {
 	
 	public HttpRequest(Map<String, String> pre, Map<String, List<String>> parms, Map<String, String> headers) {
 		this.requestMethod = pre.getOrDefault("method", null);
-		this.protocol = pre.getOrDefault("protocolVersion", null);
+		this.protocol = pre.getOrDefault("protocolVersion", "");
+		if (!(this.protocol.equals("HTTP/1.1") || this.protocol.equals("HTTP/1.0"))) {
+			throw new HaltException(505);
+		}
+
 		this.uri = pre.getOrDefault("uri", null);
 		this.host = headers.getOrDefault("host", null);
 		this.userAgent = headers.getOrDefault("user-agent", null);

@@ -34,14 +34,15 @@ public class RequestHandler {
 	public void applyRoutes(Request req, Response res) throws HaltException {
 		logger.info(String.format("Requested %s", req.uri()));
 		if (isCompliant(req, res)) {
-			boolean lookingForFile = req.requestMethod().equals("GET")
+			String requestMethod = req.requestMethod().equals("HEAD") ? "GET" : req.requestMethod();
+			boolean lookingForFile = requestMethod.equals("GET")
 					&& !routes.get("GET").containsKey(req.uri());
 			if (lookingForFile) {
 				handleFileRequest(req, res);
 				return;
 			}
 
-			Map<String, Route> routesForMethod = routes.get(req.requestMethod());
+			Map<String, Route> routesForMethod = routes.get(requestMethod);
 			if (routesForMethod == null) throw new HaltException(501);
 
 			Route route = routesForMethod.get(req.uri());

@@ -98,6 +98,11 @@ public class HttpWorker implements Runnable {
 			logger.error(e.toString());
 			closeSocket(socket);
 			return;
+		} catch (HaltException e) {
+			if (!HttpIoHandler.sendException(socket, request, e)) {
+				closeSocket(socket);
+			};
+			return;
 		}
 
 		updateControlPanelStatus(request.url());

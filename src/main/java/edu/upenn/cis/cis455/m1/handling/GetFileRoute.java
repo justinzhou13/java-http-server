@@ -1,5 +1,13 @@
 package edu.upenn.cis.cis455.m1.handling;
 
+import edu.upenn.cis.cis455.HttpRequestMethod;
+import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m1.interfaces.Request;
+import edu.upenn.cis.cis455.m1.interfaces.Response;
+import edu.upenn.cis.cis455.m1.interfaces.Route;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,16 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import edu.upenn.cis.cis455.exceptions.HaltException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import edu.upenn.cis.cis455.HttpRequestMethod;
-import edu.upenn.cis.cis455.m1.interfaces.Request;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
-import edu.upenn.cis.cis455.m1.interfaces.Route;
-import spark.http.matching.Halt;
-
 public class GetFileRoute implements Route {
 	
 	static final Logger logger = LogManager.getLogger(GetFileRoute.class);
@@ -36,8 +34,8 @@ public class GetFileRoute implements Route {
 	}
 	
 	public Object handle(Request req, Response res) {
-		if (!req.requestMethod().equals(HttpRequestMethod.GET.getValue())) {
-			throw new IllegalArgumentException("GetFileHandler called without a get method");
+		if (!req.requestMethod().equals("GET") && !req.requestMethod().equals("HEAD")) {
+			throw new HaltException(500);
 		}
 
 		String uri = req.uri();

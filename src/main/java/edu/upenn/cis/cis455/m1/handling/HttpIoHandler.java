@@ -31,9 +31,10 @@ public class HttpIoHandler {
     	statusCodeToDescription.put(404, "Not Found");
     	statusCodeToDescription.put(400, "Bad Request");
 	    statusCodeToDescription.put(501, "Not Implemented");
+	    statusCodeToDescription.put(505, "HTTP Version Not Supported");
     }
     
-    public static Request parseRequest(Socket socket) throws IOException {
+    public static Request parseRequest(Socket socket) throws IOException, HaltException {
     	InputStreamReader reader = new InputStreamReader(socket.getInputStream());
 		BufferedReader in = new BufferedReader(reader);
 		
@@ -96,7 +97,7 @@ public class HttpIoHandler {
 			OutputStream outputStream = socket.getOutputStream();
 			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
 
-			if (response.bodyRaw() != null) {
+			if (response.bodyRaw() != null && !request.requestMethod().equals("HEAD")) {
 				outputStream.write(response.bodyRaw());
 			}
 		} catch (IOException e) {
