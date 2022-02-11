@@ -42,9 +42,17 @@ public class HttpIoHandler {
 		Map<String, List<String>> parms = new HashMap<>();
 		Map<String, String> headers = new HashMap<>();
 		HttpParsing.decodeHeader(in, pre, parms, headers);
-		String ip = socket.getRemoteSocketAddress().toString();
+	    String host = socket.getInetAddress().getCanonicalHostName();
+		int port = socket.getLocalPort();
+		String ip = socket.getInetAddress().getHostAddress();
 		
-		return new HttpRequest(pre, parms, headers);
+	    return buildRequest(
+				host,
+			    port,
+			    ip,
+			    pre,
+			    parms,
+			    headers);
     }
 
     /**
@@ -106,6 +114,27 @@ public class HttpIoHandler {
 
 	    return request != null && request.persistentConnection();
     }
+
+	private static Request buildRequest(
+			String host,
+			int port,
+			String ip,
+			Map<String, String> pre,
+			Map<String, List<String>> parms,
+			Map<String, String> headers) {
+		return new HttpRequest(
+				pre.get("method"),
+				pre.get("protocolVersion"),
+				pre.get("uri"),
+				host,
+				port,
+				headers.get("user-agent"),
+				headers,
+				pre.get("queryString"),
+				parms,
+				ip
+		);
+	}
 
 	private static String firstResponseLine(Request request, int statusCode) {
 		String protocol = request != null ? request.protocol() : "HTTP/1.1";

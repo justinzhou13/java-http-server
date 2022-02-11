@@ -1,6 +1,5 @@
 package edu.upenn.cis.cis455.m1.handling;
 
-import edu.upenn.cis.cis455.HttpRequestMethod;
 import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
 import edu.upenn.cis.cis455.m1.interfaces.Response;
@@ -38,14 +37,14 @@ public class GetFileRoute implements Route {
 			throw new HaltException(500);
 		}
 
-		String uri = req.uri();
+		String pathInfo = req.pathInfo();
 		String fileLocationString;
-		if (uri.charAt(uri.length() - 1) == '/') {
+		if (pathInfo.charAt(pathInfo.length() - 1) == '/') {
 			logger.info("looking for an index.html file!");
 			fileLocationString = String.format("%s/index.html", root);
 		} else {
 			logger.info("looking for another file");
-			String fileName = uri.substring(uri.indexOf('/') + 1);
+			String fileName = pathInfo.substring(pathInfo.indexOf('/') + 1);
 			fileLocationString = String.format("%s/%s", root, fileName);
 		}
 		
@@ -63,8 +62,8 @@ public class GetFileRoute implements Route {
 			FileTime fileTime = basicFileAttributes.lastModifiedTime();
 			LocalDateTime lastModifiedTime = LocalDateTime.ofInstant(fileTime.toInstant(), ZoneId.of("GMT"));
 
-			handleModifiedSinceIfNecessary(lastModifiedTime, req, res);
-			handleUnmodifiedSinceIfNecessary(lastModifiedTime, req, res);
+			handleModifiedSinceIfNecessary(lastModifiedTime, req);
+			handleUnmodifiedSinceIfNecessary(lastModifiedTime, req);
 		} catch (InvalidPathException | IOException e) {
 			logger.error(String.format("Could not get file for path %s", fileLocationString));
 			throw new HaltException(404);
@@ -72,14 +71,14 @@ public class GetFileRoute implements Route {
 		return null;
 	}
 
-	private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req, Response res) {
+	private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
 		LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
 		if (ifModifiedSinceTime != null && lastModifiedTime.isBefore(ifModifiedSinceTime)) {
 			throw new HaltException(304);
 		}
 	}
 
-	private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req, Response res) {
+	private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
 		LocalDateTime ifUnmodifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-unmodified-since"));
 		if (ifUnmodifiedSinceTime != null && lastModifiedTime.isAfter(ifUnmodifiedSinceTime)) {
 			throw new HaltException(412);

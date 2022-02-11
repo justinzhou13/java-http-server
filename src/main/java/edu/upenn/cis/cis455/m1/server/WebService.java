@@ -54,7 +54,7 @@ public class WebService {
     
     private static final String DEFAULT_IP = "0.0.0.0";
     private static final int DEFAULT_PORT = 45555;
-	private static final String DEFAULT_ROOT = "www";
+	private static final String DEFAULT_ROOT = "./www";
 	private static final int DEFAULT_POOL_SIZE = 8;
 
     protected HttpListener listener;
@@ -173,6 +173,7 @@ public class WebService {
      */
     public void staticFileLocation(String directory) {
     	this.root = directory;
+        RequestHandler.setRootDirectory(directory);
     }
 
     /**

@@ -13,7 +13,7 @@ public class HttpComplianceHandler {
 
     public static boolean isCompliant(Request request, Response response) {
         String protocolVersion = request.protocol();
-        if (protocolVersion.equals("HTTP/1.1") && request.host() == null) {
+        if (protocolVersion.equals("HTTP/1.1") && request.headers("host") == null) {
             response.status(400);
             response.type("text/html");
             response.body(NO_HOST_RESPONSE);

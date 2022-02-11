@@ -19,57 +19,73 @@ public class HttpRequest extends Request {
 	
 	private final String requestMethod;
 	private final String protocol;
-	private final String uri;
+	private final String pathInfo;
 	private final String host;
+	private final int port;
+	private final String uri;
+	private final String url;
+
 	private final String userAgent;
 	private final Map<String, String> headers;
+	private final String queryString;
 	private final Map<String, List<String>> queryStringParms;
-	
-	
-	public HttpRequest(Map<String, String> pre, Map<String, List<String>> parms, Map<String, String> headers) {
-		this.requestMethod = pre.getOrDefault("method", null);
-		this.protocol = pre.getOrDefault("protocolVersion", "");
-		if (!(this.protocol.equals("HTTP/1.1") || this.protocol.equals("HTTP/1.0"))) {
-			throw new HaltException(505);
-		}
+	private final String ip;
 
-		this.uri = pre.getOrDefault("uri", null);
-		this.host = headers.getOrDefault("host", null);
-		this.userAgent = headers.getOrDefault("user-agent", null);
-		this.headers = Collections.unmodifiableMap(headers);
-		this.queryStringParms = parms;
+	public HttpRequest(String requestMethod,
+	                   String protocol,
+	                   String pathInfo,
+	                   String host,
+					   int port,
+	                   String userAgent,
+	                   Map<String, String> headers,
+	                   String queryString,
+	                   Map<String, List<String>> queryStringParms,
+	                   String ip) {
+		if (requestMethod == null || protocol == null || pathInfo == null || host == null) {
+			throw new HaltException(400);
+		}
+		this.requestMethod = requestMethod;
+		this.protocol = protocol;
+		this.pathInfo = pathInfo;
+		this.host = host;
+		this.port = port;
+		this.queryString = queryString;
+		this.uri = String.format("http://%s:%s%s", this.host, this.port, this.pathInfo);
+		this.url = queryString != null ? String.format("%s?%s", uri, queryString) : uri;
+		this.userAgent = userAgent;
+		this.headers = headers;
+		this.queryStringParms = queryStringParms;
+		this.ip = ip;
 	}
 
 	@Override
 	public String requestMethod() {
-		return requestMethod;
+		return this.requestMethod;
 	}
 
 	@Override
 	public String host() {
-		return host;
+		return this.host;
 	}
 
 	@Override
 	public String userAgent() {
-		return userAgent;
+		return this.userAgent;
 	}
 
 	@Override
 	public int port() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.port;
 	}
 
 	@Override
 	public String pathInfo() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.pathInfo;
 	}
 
 	@Override
 	public String url() {
-		return host + uri;
+		return this.url;
 	}
 
 	@Override
@@ -84,13 +100,12 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String contentType() {
-		return headers.getOrDefault("content-type", null);
+		return headers.get("content-type");
 	}
 
 	@Override
 	public String ip() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.ip;
 	}
 
 	@Override
