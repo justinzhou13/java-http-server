@@ -35,7 +35,7 @@ public class RequestHandler {
 		if (isCompliant(req, res)) {
 			String requestMethod = req.requestMethod().equals("HEAD") ? "GET" : req.requestMethod();
 			boolean lookingForFile = requestMethod.equals("GET")
-					&& !routes.get("GET").containsKey(req.uri());
+					&& !routes.get("GET").containsKey(req.pathInfo());
 			if (lookingForFile) {
 				handleFileRequest(req, res);
 				return;
@@ -44,7 +44,7 @@ public class RequestHandler {
 			Map<String, Route> routesForMethod = routes.get(requestMethod);
 			if (routesForMethod == null) throw new HaltException(501);
 
-			Route route = routesForMethod.get(req.uri());
+			Route route = routesForMethod.get(req.pathInfo());
 			if (route == null) throw new HaltException(404);
 
 			try {

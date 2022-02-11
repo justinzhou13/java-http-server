@@ -25,7 +25,7 @@ public class HttpWorker implements Runnable {
 	private final HttpTaskQueue taskQueue;
 	private final ShutdownStateWrapper shutdownStateWrapper;
 	private final Map<String, String> workerNameToStatuses;
-	private String workerThreadName;
+	private String workerThreadName = "";
 	
 	public HttpWorker(HttpTaskQueue taskQueue,
 	                  ShutdownStateWrapper shutdownStateWrapper,
@@ -85,7 +85,7 @@ public class HttpWorker implements Runnable {
 		return null;
 	}
 	
-	private void process(HttpTask httpTask) {
+	public void process(HttpTask httpTask) {
 		Socket socket = httpTask.getSocket();
 
 		Request request = null;

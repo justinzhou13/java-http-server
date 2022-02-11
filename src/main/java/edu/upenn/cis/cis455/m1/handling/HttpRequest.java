@@ -51,7 +51,7 @@ public class HttpRequest extends Request {
 		this.port = port;
 		this.queryString = queryString;
 		this.uri = String.format("http://%s:%s%s", this.host, this.port, this.pathInfo);
-		this.url = queryString != null ? String.format("%s?%s", uri, queryString) : uri;
+		this.url = queryString != null && queryString.length() > 0 ? String.format("%s?%s", uri, queryString) : uri;
 		this.userAgent = userAgent;
 		this.headers = headers;
 		this.queryStringParms = queryStringParms;
