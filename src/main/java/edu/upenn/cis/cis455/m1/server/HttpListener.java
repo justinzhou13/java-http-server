@@ -30,6 +30,7 @@ public class HttpListener implements Runnable {
 		
 		InetAddress ipAddress = InetAddress.getByName(ip);
 		this.serverSocket = new ServerSocket(port, DEFAULT_SOCKET_BACKLOG, ipAddress);
+		ShutdownStateWrapper.setServerSocket(this.serverSocket);
 		
 		this.queueSize = queueSize;
 		this.taskQueue = taskQueue;
@@ -43,7 +44,7 @@ public class HttpListener implements Runnable {
         		HttpTask httpTask = new HttpTask(socket);
         		addToQueue(httpTask);
         	} catch (Exception e) {
-        		System.out.println(e.toString());
+				logger.error("Error attempting to accept a socket from a server socket");
         	}
         }
 		logger.info("Shutting down down http listener");
