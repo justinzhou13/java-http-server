@@ -23,17 +23,14 @@ public class HttpWorker implements Runnable {
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
 	private final HttpTaskQueue taskQueue;
-	private final RequestHandler requestHandler;
 	private final ShutdownStateWrapper shutdownStateWrapper;
 	private final Map<String, String> workerNameToStatuses;
 	private String workerThreadName;
 	
 	public HttpWorker(HttpTaskQueue taskQueue,
-	                  RequestHandler requestHandler,
 	                  ShutdownStateWrapper shutdownStateWrapper,
 	                  Map<String, String> workerNameToStatuses) {
 		this.taskQueue = taskQueue;
-		this.requestHandler = requestHandler;
 		this.shutdownStateWrapper = shutdownStateWrapper;
 		this.workerNameToStatuses = workerNameToStatuses;
 	}
@@ -109,7 +106,7 @@ public class HttpWorker implements Runnable {
 		Response response = new HttpResponse();
 
 		try {
-			requestHandler.applyRoutes(request, response);
+			RequestHandler.applyRoutes(request, response);
 			if (!HttpIoHandler.sendResponse(socket, request, response)) {
 				closeSocket(socket);
 			}

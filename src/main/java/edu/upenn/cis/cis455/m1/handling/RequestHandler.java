@@ -16,13 +16,12 @@ public class RequestHandler {
 
 	static final Logger logger = LogManager.getLogger(RequestHandler.class);
 
-	private final Map<String, Map<String, Route>> routes;
+	private static final Map<String, Map<String, Route>> routes;
 
-	private final GetFileRoute getFileRoute;
+	private static final GetFileRoute getFileRoute = new GetFileRoute();
 
-	public RequestHandler(String root) {
-		this.getFileRoute = new GetFileRoute(root);
-		this.routes = new HashMap<>();
+	static {
+		routes = new HashMap<>();
 		routes.put("GET", new HashMap<>());
 		routes.put("POST", new HashMap<>());
 		routes.put("PUT", new HashMap<>());
@@ -31,7 +30,11 @@ public class RequestHandler {
 		routes.put("OPTIONS", new HashMap<>());
 	}
 
-	public void applyRoutes(Request req, Response res) throws HaltException {
+	public static void setRootDirectory(String root) {
+		getFileRoute.setRoot(root);
+	}
+
+	public static void applyRoutes(Request req, Response res) throws HaltException {
 		logger.info(String.format("Requested %s", req.uri()));
 		if (isCompliant(req, res)) {
 			String requestMethod = req.requestMethod().equals("HEAD") ? "GET" : req.requestMethod();
@@ -57,16 +60,18 @@ public class RequestHandler {
 		}
 	}
 
-	public void handleFileRequest(Request req, Response res) {
+	public static void handleFileRequest(Request req, Response res) {
 		getFileRoute.handle(req, res);
 	}
 
-	public void addRoute(String httpMethod, String uri, Route route) {
+	public static void addRoute(String httpMethod, String uri, Route route) {
 		try {
 			logger.info(String.format("attempting to add new route to worker for method %s and uri %s",
 							httpMethod,
 							uri));
-			routes.get(httpMethod).put(uri, route);
+			synchronized (routes) {
+				routes.get(httpMethod).put(uri, route);
+			}
 		} catch (NullPointerException e) {
 			logger.error("Attempted to add a route that wasn't a valid HTTP method");
 		}

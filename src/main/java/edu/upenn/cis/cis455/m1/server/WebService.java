@@ -43,6 +43,8 @@ import org.apache.logging.log4j.Logger;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
 
+import static edu.upenn.cis.cis455.m1.handling.RequestHandler.addRoute;
+
 public class WebService {
     final static Logger logger = LogManager.getLogger(WebService.class);
 
@@ -65,22 +67,20 @@ public class WebService {
 	private int poolSize;
     private final ShutdownStateWrapper shutdownStateWrapper;
 
-    private RequestHandler requestHandler;
-
 	public WebService() {
 		ip = DEFAULT_IP;
 		port = DEFAULT_PORT;
 		root = DEFAULT_ROOT;
 		poolSize = DEFAULT_POOL_SIZE;
 
-        requestHandler = new RequestHandler(root);
+        RequestHandler.setRootDirectory(root);
 
         shutdownStateWrapper = new ShutdownStateWrapper();
         ShutdownRoute shutdownRoute = new ShutdownRoute(shutdownStateWrapper);
-        requestHandler.addRoute("GET", "/shutdown", shutdownRoute);
+        addRoute("GET", "/shutdown", shutdownRoute);
 
         workerThreadNameToStatus = new HashMap<>();
-        requestHandler.addRoute("GET", "/control", new ControlPanelRoute(workerThreadNameToStatus));
+        addRoute("GET", "/control", new ControlPanelRoute(workerThreadNameToStatus));
 	}
 
     /**
@@ -101,7 +101,7 @@ public class WebService {
 		logger.debug("Spinning up worker pool");
 		httpWorkers = new ArrayList<>();
     	for (int i = 0; i < poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, requestHandler, shutdownStateWrapper, workerThreadNameToStatus);
+    		HttpWorker worker = new HttpWorker(taskQueue, shutdownStateWrapper, workerThreadNameToStatus);
             httpWorkers.add(worker);
 
     		Thread workerThread = new Thread(worker);

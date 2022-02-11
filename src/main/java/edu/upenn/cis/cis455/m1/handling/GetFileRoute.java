@@ -27,9 +27,9 @@ public class GetFileRoute implements Route {
 	
 	static final Logger logger = LogManager.getLogger(GetFileRoute.class);
 	
-	private final String root;
+	private String root;
 	
-	public GetFileRoute(String root) {
+	public void setRoot(String root) {
 		this.root = root;
 	}
 	
