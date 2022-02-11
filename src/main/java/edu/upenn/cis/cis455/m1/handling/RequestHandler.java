@@ -23,11 +23,7 @@ public class RequestHandler {
 	static {
 		routes = new HashMap<>();
 		routes.put("GET", new HashMap<>());
-		routes.put("POST", new HashMap<>());
-		routes.put("PUT", new HashMap<>());
 		routes.put("HEAD", new HashMap<>());
-		routes.put("DELETE", new HashMap<>());
-		routes.put("OPTIONS", new HashMap<>());
 	}
 
 	public static void setRootDirectory(String root) {
