@@ -65,7 +65,6 @@ public class WebService {
 	private int port;
 	private String root;
 	private int poolSize;
-    private final ShutdownStateWrapper shutdownStateWrapper;
 
 	public WebService() {
 		ip = DEFAULT_IP;
@@ -75,8 +74,7 @@ public class WebService {
 
         RequestHandler.setRootDirectory(root);
 
-        shutdownStateWrapper = new ShutdownStateWrapper();
-        ShutdownRoute shutdownRoute = new ShutdownRoute(shutdownStateWrapper);
+        ShutdownRoute shutdownRoute = new ShutdownRoute();
         addRoute("GET", "/shutdown", shutdownRoute);
 
         workerThreadNameToStatus = new HashMap<>();
@@ -91,7 +89,7 @@ public class WebService {
     	HttpTaskQueue taskQueue = new HttpTaskQueue();
     	
 		try {
-			listener = new HttpListener(ip, port, DEFAULT_QUEUE_SIZE, taskQueue, shutdownStateWrapper);
+			listener = new HttpListener(ip, port, DEFAULT_QUEUE_SIZE, taskQueue);
 			Thread listenerThread = new Thread(listener);
 			listenerThread.start();
 		} catch (IOException e) {
@@ -101,7 +99,7 @@ public class WebService {
 		logger.debug("Spinning up worker pool");
 		httpWorkers = new ArrayList<>();
     	for (int i = 0; i < poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, shutdownStateWrapper, workerThreadNameToStatus);
+    		HttpWorker worker = new HttpWorker(taskQueue, workerThreadNameToStatus);
             httpWorkers.add(worker);
 
     		Thread workerThread = new Thread(worker);
@@ -118,8 +116,8 @@ public class WebService {
      * Gracefully shut down the server
      */
     public void stop() {
-        synchronized (shutdownStateWrapper) {
-            shutdownStateWrapper.setShouldShutDown(true);
+        synchronized (ShutdownStateWrapper.class) {
+            ShutdownStateWrapper.setShouldShutDown(true);
         }
     }
 

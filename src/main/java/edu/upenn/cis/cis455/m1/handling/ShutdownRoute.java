@@ -9,16 +9,11 @@ import org.apache.logging.log4j.Logger;
 public class ShutdownRoute implements Route {
 
     static final Logger logger = LogManager.getLogger(ShutdownRoute.class);
-    private final ShutdownStateWrapper shutdownStateWrapper;
-
-    public ShutdownRoute(ShutdownStateWrapper shutdownStateWrapper) {
-        this.shutdownStateWrapper = shutdownStateWrapper;
-    }
 
     public Object handle(Request request, Response response) {
         logger.info("Attempting to shut down");
-        synchronized (shutdownStateWrapper) {
-            shutdownStateWrapper.setShouldShutDown(true);
+        synchronized (ShutdownStateWrapper.class) {
+            ShutdownStateWrapper.setShouldShutDown(true);
         }
         return true;
     }

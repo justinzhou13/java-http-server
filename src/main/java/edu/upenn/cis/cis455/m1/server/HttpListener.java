@@ -22,9 +22,8 @@ public class HttpListener implements Runnable {
 	
 	private final int queueSize;
 	private final HttpTaskQueue taskQueue;
-	private final ShutdownStateWrapper shutdownStateWrapper;
-	
-	public HttpListener(String ip, int port, int queueSize, HttpTaskQueue taskQueue, ShutdownStateWrapper shutdownStateWrapper) throws IOException {
+
+	public HttpListener(String ip, int port, int queueSize, HttpTaskQueue taskQueue) throws IOException {
 		if (queueSize <= 0) {
 			throw new IllegalArgumentException("Queue size must be greater than 0");
 		}
@@ -34,12 +33,11 @@ public class HttpListener implements Runnable {
 		
 		this.queueSize = queueSize;
 		this.taskQueue = taskQueue;
-		this.shutdownStateWrapper = shutdownStateWrapper;
 	}
 
     @Override
     public void run(){
-        while (!shutdownStateWrapper.isShouldShutDown()) {
+        while (!ShutdownStateWrapper.isShouldShutDown()) {
         	try {
         		Socket socket = serverSocket.accept();
         		HttpTask httpTask = new HttpTask(socket);
@@ -52,7 +50,7 @@ public class HttpListener implements Runnable {
     }
     
     private void addToQueue(HttpTask httpTask) throws InterruptedException {
-    	while (true) {
+    	while (!ShutdownStateWrapper.isShouldShutDown()) {
 			synchronized (taskQueue) {
 				if (taskQueue.size() == queueSize) {
 					// Synchronizing on the sharedQueue to make sure no more than one

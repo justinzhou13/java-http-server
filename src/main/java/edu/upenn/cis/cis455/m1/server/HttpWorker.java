@@ -23,15 +23,12 @@ public class HttpWorker implements Runnable {
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
 	private final HttpTaskQueue taskQueue;
-	private final ShutdownStateWrapper shutdownStateWrapper;
 	private final Map<String, String> workerNameToStatuses;
 	private String workerThreadName = "";
 	
 	public HttpWorker(HttpTaskQueue taskQueue,
-	                  ShutdownStateWrapper shutdownStateWrapper,
 	                  Map<String, String> workerNameToStatuses) {
 		this.taskQueue = taskQueue;
-		this.shutdownStateWrapper = shutdownStateWrapper;
 		this.workerNameToStatuses = workerNameToStatuses;
 	}
 
@@ -42,7 +39,8 @@ public class HttpWorker implements Runnable {
     @Override
     public void run() {
     	logger.debug("Running worker");
-        while (!shutdownStateWrapper.isShouldShutDown()) {
+		boolean shouldShutDown = false;
+        while (!shouldShutDown) {
 			HttpTask httpTask = null;
         	try {
         		httpTask = readFromQueue();
@@ -60,6 +58,9 @@ public class HttpWorker implements Runnable {
 					}
 				}
         	}
+			synchronized (ShutdownStateWrapper.class) {
+				shouldShutDown = ShutdownStateWrapper.isShouldShutDown();
+			}
         }
 		logger.info("Shutting down worker");
 		return;
@@ -67,7 +68,8 @@ public class HttpWorker implements Runnable {
     
 	private HttpTask readFromQueue() throws InterruptedException {
 		logger.debug("Reading from queue");
-		while (!shutdownStateWrapper.isShouldShutDown()) {
+		boolean shouldShutDown = false;
+		while (!shouldShutDown) {
 			synchronized (taskQueue) {
 				if (taskQueue.isEmpty()) {
 					//If the queue is empty, we push the current thread to waiting state. Way to avoid polling.
@@ -80,6 +82,9 @@ public class HttpWorker implements Runnable {
 					logger.debug("Exiting queue with return");
 					return httpTask;
 				}
+			}
+			synchronized (ShutdownStateWrapper.class) {
+				shouldShutDown = ShutdownStateWrapper.isShouldShutDown();
 			}
 		}
 		return null;
