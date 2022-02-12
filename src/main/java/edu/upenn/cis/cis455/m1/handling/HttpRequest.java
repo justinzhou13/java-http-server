@@ -27,7 +27,6 @@ public class HttpRequest extends Request {
 
 	private final String userAgent;
 	private final Map<String, String> headers;
-	private final String queryString;
 	private final Map<String, List<String>> queryStringParms;
 	private final String ip;
 
@@ -46,10 +45,14 @@ public class HttpRequest extends Request {
 		}
 		this.requestMethod = requestMethod;
 		this.protocol = protocol;
+
+		if (pathInfo.startsWith("http")) {
+			//counting forward from "http://" to the first backslash, handing absolute paths
+			pathInfo = pathInfo.substring(pathInfo.indexOf('/', 8));
+		}
 		this.pathInfo = pathInfo;
 		this.host = host;
 		this.port = port;
-		this.queryString = queryString;
 		this.uri = String.format("http://%s:%s%s", this.host, this.port, this.pathInfo);
 		this.url = queryString != null && queryString.length() > 0 ? String.format("%s?%s", uri, queryString) : uri;
 		this.userAgent = userAgent;
