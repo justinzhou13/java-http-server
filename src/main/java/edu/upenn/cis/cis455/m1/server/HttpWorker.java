@@ -64,10 +64,6 @@ public class HttpWorker implements Runnable {
 			}
         }
 		logger.info("Shutting down worker");
-		logger.info("Notifying all other workers waiting in lock");
-		synchronized (taskQueue) {
-			taskQueue.notifyAll();
-		}
     }
     
 	private HttpTask readFromQueue() throws InterruptedException {
