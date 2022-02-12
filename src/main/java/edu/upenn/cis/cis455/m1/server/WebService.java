@@ -42,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import org.eclipse.jetty.server.handler.ShutdownHandler;
 
 import static edu.upenn.cis.cis455.m1.handling.RequestHandler.addRoute;
 
@@ -65,14 +66,18 @@ public class WebService {
 	private int port;
 	private String root;
 	private int poolSize;
+    private HttpTaskQueue taskQueue;
 
 	public WebService() {
 		ip = DEFAULT_IP;
 		port = DEFAULT_PORT;
 		root = DEFAULT_ROOT;
 		poolSize = DEFAULT_POOL_SIZE;
+        taskQueue = new HttpTaskQueue();
 
         RequestHandler.setRootDirectory(root);
+
+        ShutdownStateWrapper.setHttpTaskQueue(taskQueue);
 
         ShutdownRoute shutdownRoute = new ShutdownRoute();
         addRoute("GET", "/shutdown", shutdownRoute);
@@ -86,8 +91,7 @@ public class WebService {
      * @throws Exception 
      */
     public void start() {
-    	HttpTaskQueue taskQueue = new HttpTaskQueue();
-    	
+
 		try {
 			listener = new HttpListener(ip, port, DEFAULT_QUEUE_SIZE, taskQueue);
 			Thread listenerThread = new Thread(listener);
