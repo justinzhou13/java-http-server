@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertTrue;
 
@@ -104,7 +105,7 @@ public class TestSendException {
         String result = byteArrayOutputStream.toString("UTF-8").replace("\r", "");
         System.out.println(result);
 
-        assertTrue(result.startsWith("HTTP/1.0 404"));
+        assertTrue(result.startsWith("HTTP/1.1 404"));
     }
 
     @Test
@@ -131,7 +132,7 @@ public class TestSendException {
                 samplePost,
                 byteArrayOutputStream);
 
-        Response response = new HttpResponse();
+        Response response = new HttpResponse(new HashMap<>());
         HttpIoHandler.sendResponse(s, null, response);
 
         String result = byteArrayOutputStream.toString("UTF-8").replace("\r", "");
@@ -147,7 +148,7 @@ public class TestSendException {
                 samplePost,
                 byteArrayOutputStream);
 
-        Response response = new HttpResponse();
+        Response response = new HttpResponse(new HashMap<>());
         HttpIoHandler.sendResponse(s, null, response);
 
         String result = byteArrayOutputStream.toString("UTF-8").replace("\r", "");

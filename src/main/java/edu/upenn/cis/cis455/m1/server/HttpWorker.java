@@ -2,6 +2,7 @@ package edu.upenn.cis.cis455.m1.server;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
@@ -111,7 +112,7 @@ public class HttpWorker implements Runnable {
 		}
 
 		updateControlPanelStatus(request.url());
-		Response response = new HttpResponse();
+		Response response = new HttpResponse(new HashMap<>());
 
 		try {
 			RequestHandler.applyRoutes(request, response);

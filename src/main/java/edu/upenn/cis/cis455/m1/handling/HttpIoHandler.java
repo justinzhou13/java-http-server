@@ -62,10 +62,10 @@ public class HttpIoHandler {
      * connections).
      */
     public static boolean sendException(Socket socket, Request request, HaltException except) {
-		String firstResponseLine = firstResponseLine(request, except.statusCode());
-		String dateResponseLine = dateResponseLine();
+		Response response = new HttpResponse(new HashMap<>());
+		response.status(except.statusCode());
 
-		String responseString = String.format("%s%s", firstResponseLine, dateResponseLine);
+		String responseString = generateResponse(response);
 
 		try {
 			OutputStream outputStream = socket.getOutputStream();
@@ -83,24 +83,7 @@ public class HttpIoHandler {
      * @throws IOException 
      */
     public static boolean sendResponse(Socket socket, Request request, Response response) {
-    	int responseStatus = response.status();
-    	String firstResponseLine = firstResponseLine(request, responseStatus);
-    	String dateResponseLine = dateResponseLine();
-    	
-    	String contentTypeLine = "";
-    	String contentLengthLine = "";
-    	String bodyTextLine = "";
-    	if (response.bodyRaw() != null && response.bodyRaw().length > 0) {
-    		contentTypeLine = String.format("Content-Type: %s \r\n", response.type());
-    		contentLengthLine = String.format("Content-Length: %s \r\n", response.bodyRaw().length);
-    	}
-    	
-    	String responseString = String.format("%s%s%s%s\r\n%s",
-    			firstResponseLine, 
-    			dateResponseLine, 
-    			contentTypeLine, 
-    			contentLengthLine,
-    			bodyTextLine);
+		String responseString = generateResponse(response);
 
 		try {
 			OutputStream outputStream = socket.getOutputStream();
@@ -137,8 +120,21 @@ public class HttpIoHandler {
 		);
 	}
 
-	private static String firstResponseLine(Request request, int statusCode) {
-		String protocol = request != null ? request.protocol() : "HTTP/1.1";
+	private static String generateResponse(Response res) {
+		if (res == null) {
+			logger.error("Attempted to generate a response for a null Response object");
+			return "";
+		}
+		String out = "";
+		out += firstResponseLine(res.status());
+		out += dateResponseLine();
+		out += res.getHeaders();
+		out += "\r\n\r\n";
+		return out;
+	}
+
+	private static String firstResponseLine(int statusCode) {
+		String protocol = "HTTP/1.1";
 		String statusDescription = statusCodeToDescription.get(statusCode);
 		return String.format("%s %d %s \r\n", protocol, statusCode, statusDescription);
 	}
