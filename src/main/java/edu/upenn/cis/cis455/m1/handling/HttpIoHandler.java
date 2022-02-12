@@ -129,7 +129,7 @@ public class HttpIoHandler {
 		out += firstResponseLine(res.status());
 		out += dateResponseLine();
 		out += res.getHeaders();
-		out += "\r\n\r\n";
+		out += "\r\n";
 		return out;
 	}
 
