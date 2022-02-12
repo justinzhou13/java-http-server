@@ -20,7 +20,11 @@ public class TestHelper {
         when(s.getOutputStream()).thenReturn(output);
         when(s.getLocalAddress()).thenReturn(InetAddress.getLocalHost());
         when(s.getRemoteSocketAddress()).thenReturn(InetSocketAddress.createUnresolved("host", 8080));
-        
+
+        InetAddress mockInetAddress = mock(InetAddress.class);
+        when(s.getInetAddress()).thenReturn(mockInetAddress);
+        when(mockInetAddress.getHostName()).thenReturn("localhost");
+
         return s;
     }
 }

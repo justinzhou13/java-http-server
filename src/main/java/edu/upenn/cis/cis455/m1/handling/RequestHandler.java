@@ -32,6 +32,8 @@ public class RequestHandler {
 
 	public static void applyRoutes(Request req, Response res) throws HaltException {
 		logger.info(String.format("Requested %s", req.uri()));
+
+		checkProtocolSupported(req);
 		if (isCompliant(req, res)) {
 			String requestMethod = req.requestMethod().equals("HEAD") ? "GET" : req.requestMethod();
 			boolean lookingForFile = requestMethod.equals("GET")
@@ -70,6 +72,12 @@ public class RequestHandler {
 			}
 		} catch (NullPointerException e) {
 			logger.error("Attempted to add a route that wasn't a valid HTTP method");
+		}
+	}
+
+	private static void checkProtocolSupported(Request req) {
+		if (!(req.protocol().equals("HTTP/1.0") || req.protocol().equals("HTTP/1.1"))) {
+			throw new HaltException(505);
 		}
 	}
 }

@@ -67,7 +67,6 @@ public class HttpWorker implements Runnable {
 		synchronized (taskQueue) {
 			taskQueue.notifyAll();
 		}
-		return;
     }
     
 	private HttpTask readFromQueue() throws InterruptedException {
@@ -129,8 +128,12 @@ public class HttpWorker implements Runnable {
 	}
 
 	private void updateControlPanelStatus(String status) {
-		synchronized (workerNameToStatuses) {
-			workerNameToStatuses.put(workerThreadName, status);
+		try {
+			synchronized (workerNameToStatuses) {
+				workerNameToStatuses.put(workerThreadName, status);
+			}
+		} catch (Exception e) {
+			logger.error("Error updating control panel status");
 		}
 	}
 

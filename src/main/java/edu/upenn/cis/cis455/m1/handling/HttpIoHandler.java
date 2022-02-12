@@ -42,7 +42,7 @@ public class HttpIoHandler {
 		Map<String, List<String>> parms = new HashMap<>();
 		Map<String, String> headers = new HashMap<>();
 		HttpParsing.decodeHeader(in, pre, parms, headers);
-	    String host = socket.getInetAddress().getCanonicalHostName();
+	    String host = socket.getInetAddress().getHostName();
 		int port = socket.getLocalPort();
 		String ip = socket.getInetAddress().getHostAddress();
 		
