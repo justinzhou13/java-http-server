@@ -38,10 +38,15 @@ import edu.upenn.cis.cis455.m2.interfaces.Session;
 
 // change to to edu.upenn.cis.cis455.m2 for m2
 import edu.upenn.cis.cis455.m1.server.WebService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import spark.Spark;
 
 public class SparkController {
-	
-	private static final WebService webService = new WebService();
+
+    final static Logger logger = LogManager.getLogger(SparkController.class);
+
+    private static final WebService webService = new WebService();
 
     // We don't want people to use the constructor
     protected SparkController() {}
@@ -147,7 +152,11 @@ public class SparkController {
      * Set the IP address to listen on (default 0.0.0.0)
      */
     public static void ipAddress(String ipAddress) {
-        webService.ipAddress(ipAddress);
+        if (ipAddress != null) {
+            webService.ipAddress(ipAddress);
+        } else {
+            logger.error("Null ip address passed to webservice");
+        }
     }
 
     /**
@@ -161,14 +170,22 @@ public class SparkController {
      * Set the size of the thread pool
      */
     public static void threadPool(int threads) {
-        webService.threadPool(threads);
+        if (threads > 0) {
+            webService.threadPool(threads);
+        } else {
+            logger.error("Threadpool size <= 1 passed to webservice");
+        }
     }
 
     /**
      * Set the root directory of the "static web" files
      */
     public static void staticFileLocation(String directory) {
-        webService.staticFileLocation(directory);
+         if (directory != null) {
+             webService.staticFileLocation(directory);
+         } else {
+             logger.error("Null directory passed to webservice");
+         }
     }
 
     /**
