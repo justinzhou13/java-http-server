@@ -9,6 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -26,7 +28,7 @@ public class GetFileRoute implements Route {
 	
 	static final Logger logger = LogManager.getLogger(GetFileRoute.class);
 	
-	private String root;
+	private String root = "./www";
 	
 	public void setRoot(String root) {
 		this.root = root;
@@ -47,13 +49,15 @@ public class GetFileRoute implements Route {
 			String fileName = pathInfo.substring(pathInfo.indexOf('/') + 1);
 			fileLocationString = String.format("%s/%s", root, fileName);
 		}
-		
+
 		File requestedFile = new File(fileLocationString);
 		try {
 			Path filePath = requestedFile.toPath();
+
+			checkFileIsInRootDirectory(requestedFile);
+
 			String contentType = Files.probeContentType(filePath);
 			res.type(contentType);
-
 			byte[] fileData = Files.readAllBytes(filePath);
 			res.bodyRaw(fileData);
 
@@ -111,5 +115,15 @@ public class GetFileRoute implements Route {
 			}
 		}
 		return null;
+	}
+
+	private void checkFileIsInRootDirectory(File requestedFile) {
+		File rootDirectory = new File(root);
+		String rootDirectoryURI = rootDirectory.toURI().normalize().toString();
+		String requestedFileURI = requestedFile.toURI().normalize().toString();
+		if (!requestedFileURI.startsWith(rootDirectoryURI)) {
+			logger.info("User attempted to request a file not in the root directory");
+			throw new HaltException(403);
+		}
 	}
 }

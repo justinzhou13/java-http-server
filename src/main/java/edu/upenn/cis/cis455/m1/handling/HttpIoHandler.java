@@ -29,6 +29,7 @@ public class HttpIoHandler {
 	    statusCodeToDescription.put(304, "Not Modified");
 		statusCodeToDescription.put(412, "Precondition Failed");
     	statusCodeToDescription.put(404, "Not Found");
+	    statusCodeToDescription.put(403, "Forbidden");
     	statusCodeToDescription.put(400, "Bad Request");
 	    statusCodeToDescription.put(501, "Not Implemented");
 	    statusCodeToDescription.put(505, "HTTP Version Not Supported");
