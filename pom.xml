@@ -102,7 +102,7 @@
                 <mainClass>edu.upenn.cis.cis455.WebServer</mainClass>
                 <arguments>
                   <argument>45555</argument>
-                  <argument>/vagrant/555-hw1/www</argument>
+                  <argument>./www</argument>
                 </arguments>
               </configuration>
             </plugin>
