@@ -1,17 +1,13 @@
 package edu.upenn.cis.cis455.m1.handling;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m1.interfaces.Request;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import edu.upenn.cis.cis455.m1.interfaces.Request;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class HttpRequest extends Request {
 	

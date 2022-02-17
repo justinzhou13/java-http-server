@@ -28,12 +28,7 @@
  */
 package edu.upenn.cis.cis455.m1.server;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.handling.ControlPanelRoute;
 import edu.upenn.cis.cis455.m1.handling.RequestHandler;
 import edu.upenn.cis.cis455.m1.handling.ShutdownRoute;
@@ -41,8 +36,11 @@ import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import edu.upenn.cis.cis455.exceptions.HaltException;
-import org.eclipse.jetty.server.handler.ShutdownHandler;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static edu.upenn.cis.cis455.m1.handling.RequestHandler.addRoute;
 
