@@ -1,19 +1,24 @@
 package edu.upenn.cis.cis455.m1.handling;
 
-import java.io.*;
+import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m2.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.interfaces.Request;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Handles marshaling between HTTP Requests and Responses

@@ -1,8 +1,8 @@
 package edu.upenn.cis.cis455.m1.handling;
 
-import edu.upenn.cis.cis455.m1.interfaces.Request;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
-import edu.upenn.cis.cis455.m1.interfaces.Route;
+import edu.upenn.cis.cis455.m2.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Response;
+import edu.upenn.cis.cis455.m2.interfaces.Route;
 
 import java.util.Map;
 

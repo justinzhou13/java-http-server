@@ -1,7 +1,7 @@
 package edu.upenn.cis.cis455.m1.handling;
 
-import edu.upenn.cis.cis455.m1.interfaces.Request;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
+import edu.upenn.cis.cis455.m2.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Response;
 
 public class HttpComplianceHandler {
 

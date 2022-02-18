@@ -24,7 +24,7 @@ import java.util.Locale;
 
 public class GetFileRoute implements Route {
 
-    static final Logger logger = LogManager.getLogger(edu.upenn.cis.cis455.m1.handling.GetFileRoute.class);
+    static final Logger logger = LogManager.getLogger(GetFileRoute.class);
 
     private String root = "./www";
 
@@ -78,14 +78,14 @@ public class GetFileRoute implements Route {
         return null;
     }
 
-    private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, edu.upenn.cis.cis455.m1.interfaces.Request req) {
+    private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
         LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
         if (ifModifiedSinceTime != null && lastModifiedTime.isBefore(ifModifiedSinceTime)) {
             throw new HaltException(304);
         }
     }
 
-    private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, edu.upenn.cis.cis455.m1.interfaces.Request req) {
+    private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
         LocalDateTime ifUnmodifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-unmodified-since"));
         if (ifUnmodifiedSinceTime != null && lastModifiedTime.isAfter(ifUnmodifiedSinceTime)) {
             throw new HaltException(412);

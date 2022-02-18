@@ -4,7 +4,7 @@ import edu.upenn.cis.cis455.TestHelper;
 import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
 import edu.upenn.cis.cis455.m1.handling.HttpResponse;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
+import edu.upenn.cis.cis455.m2.interfaces.Response;
 import org.apache.logging.log4j.Level;
 import org.junit.After;
 import org.junit.Before;

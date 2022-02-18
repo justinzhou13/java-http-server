@@ -1,7 +1,8 @@
 package edu.upenn.cis.cis455.m1.handling;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Session;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -133,4 +134,58 @@ public class HttpRequest extends Request {
 		return headers.keySet();
 	}
 
+	@Override
+	public Session session() {
+		return null;
+	}
+
+	@Override
+	public Session session(boolean create) {
+		return null;
+	}
+
+	@Override
+	public Map<String, String> params() {
+		return null;
+	}
+
+	@Override
+	public String queryParams(String param) {
+		return null;
+	}
+
+	@Override
+	public List<String> queryParamsValues(String param) {
+		return null;
+	}
+
+	@Override
+	public Set<String> queryParams() {
+		return null;
+	}
+
+	@Override
+	public String queryString() {
+		return null;
+	}
+
+	@Override
+	public void attribute(String attrib, Object val) {
+
+	}
+
+	@Override
+	public Object attribute(String attrib) {
+		return null;
+	}
+
+	@Override
+	public Set<String> attributes() {
+		return null;
+	}
+
+	@Override
+	public Map<String, String> cookies() {
+		return null;
+	}
 }

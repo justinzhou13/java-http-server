@@ -1,9 +1,10 @@
 package edu.upenn.cis.cis455.m1.handling;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.interfaces.Request;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
-import edu.upenn.cis.cis455.m1.interfaces.Route;
+import edu.upenn.cis.cis455.m2.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Response;
+import edu.upenn.cis.cis455.m2.interfaces.Route;
+import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
 import edu.upenn.cis.cis455.m2.routehandling.PathStep;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +38,7 @@ public class RequestHandler {
 	}
 
 	//TODO replace map of routes with route tree
-	public static void applyRoutes(Request req, Response res) throws HaltException {
+	public static void applyRoutes(Request req, Response res) throws Exception {
 		logger.info(String.format("Requested %s", req.uri()));
 
 		checkProtocolSupported(req);
@@ -65,7 +66,7 @@ public class RequestHandler {
 		}
 	}
 
-	public static void handleFileRequest(Request req, Response res) {
+	public static void handleFileRequest(Request req, Response res) throws Exception {
 		getFileRoute.handle(req, res);
 	}
 

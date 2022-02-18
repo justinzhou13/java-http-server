@@ -1,20 +1,19 @@
 package edu.upenn.cis.cis455.m1.server;
 
+import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
+import edu.upenn.cis.cis455.m1.handling.HttpResponse;
+import edu.upenn.cis.cis455.m1.handling.RequestHandler;
+import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
+import edu.upenn.cis.cis455.m2.interfaces.Request;
+import edu.upenn.cis.cis455.m2.interfaces.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-
-import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import edu.upenn.cis.cis455.m1.handling.RequestHandler;
-import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
-import edu.upenn.cis.cis455.m1.handling.HttpResponse;
-import edu.upenn.cis.cis455.m1.interfaces.Request;
-import edu.upenn.cis.cis455.m1.interfaces.Response;
 
 /**
  * Stub class for a thread worker that handles Web requests
@@ -119,6 +118,8 @@ public class HttpWorker implements Runnable {
 			if (!HttpIoHandler.sendException(socket, request, e)) {
 				closeSocket(socket);
 			};
+		} catch (Exception e) {
+			logger.error("Exception occured while processing request: " + e.getMessage());
 		}
 
 		updateControlPanelStatus(WebService.WORKER_WAITING_LABEL);
