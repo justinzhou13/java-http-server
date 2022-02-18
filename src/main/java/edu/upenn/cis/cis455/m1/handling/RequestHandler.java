@@ -4,6 +4,7 @@ import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.interfaces.Request;
 import edu.upenn.cis.cis455.m1.interfaces.Response;
 import edu.upenn.cis.cis455.m1.interfaces.Route;
+import edu.upenn.cis.cis455.m2.routehandling.PathStep;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +18,7 @@ public class RequestHandler {
 	static final Logger logger = LogManager.getLogger(RequestHandler.class);
 
 	private static final Map<String, Map<String, Route>> routes;
+	private static final Map<String, PathStep> routeTrees;
 
 	private static final GetFileRoute getFileRoute = new GetFileRoute();
 
@@ -24,12 +26,17 @@ public class RequestHandler {
 		routes = new HashMap<>();
 		routes.put("GET", new HashMap<>());
 		routes.put("HEAD", new HashMap<>());
+
+		routeTrees = new HashMap<>();
+		routeTrees.put("GET", new PathStep(""));
+		routeTrees.put("HEAD", new PathStep(""));
 	}
 
 	public static void setRootDirectory(String root) {
 		getFileRoute.setRoot(root);
 	}
 
+	//TODO replace map of routes with route tree
 	public static void applyRoutes(Request req, Response res) throws HaltException {
 		logger.info(String.format("Requested %s", req.uri()));
 
@@ -72,6 +79,33 @@ public class RequestHandler {
 			}
 		} catch (NullPointerException e) {
 			logger.error("Attempted to add a route that wasn't a valid HTTP method");
+		}
+	}
+
+	public static void addRouteToTree(String httpMethod, String path, edu.upenn.cis.cis455.m2.interfaces.Route route) {
+		synchronized (routeTrees) {
+			PathStep root;
+			if (!routeTrees.containsKey(httpMethod)) {
+				root = new PathStep("");
+				routeTrees.put(httpMethod, root);
+			} else {
+				root = routeTrees.get(httpMethod);
+			}
+			String[] pathSteps = path.split("/");
+			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
+			root.addRoutePath(pathSteps, 0, route);
+		}
+	}
+
+	public static edu.upenn.cis.cis455.m2.interfaces.Route getRoute(String httpMethod, String path) {
+		synchronized (routeTrees) {
+			if (!routeTrees.containsKey(httpMethod)) {
+				throw new HaltException(501);
+			}
+			PathStep root = routeTrees.get(httpMethod);
+			String[] pathSteps = path.split("/");
+			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
+			return root.getRoutePath(pathSteps, 0);
 		}
 	}
 
