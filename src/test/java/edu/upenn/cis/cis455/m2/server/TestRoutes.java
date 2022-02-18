@@ -61,4 +61,20 @@ public class TestRoutes {
         assertEquals("finalvalue", params.get(":value3"));
         assertNull(getRoute("GET", "/", new HashMap<>()));
     }
+
+    @Test
+    public void testRoutesWithOverlappingPathsAddedSuccessfully() {
+        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        wwwRoute.setRoot("./www");
+        addRouteToTree("GET", "/route/www", wwwRoute);
+        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute orgRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        orgRoute.setRoot("./org");
+        addRouteToTree("GET", "/route/org", orgRoute);
+        GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/route/www", new HashMap<>());
+        GetFileRoute orgTest = (GetFileRoute) getRoute("GET", "/route/org",new HashMap<>());
+
+        assertEquals("./www", wwwTest.getRoot());
+        assertEquals("./org", orgTest.getRoot());
+        assertNull(getRoute("GET", "/", new HashMap<>()));
+    }
 }
