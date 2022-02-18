@@ -40,6 +40,12 @@ public class WebServer {
             return String.valueOf(part1 + part2);
         });
 
+        get("/hello/:name", (request, response) -> {
+            String name = request.params(":name");
+            response.type("text/plain");
+            return "Hello, " + name + "!";
+        });
+
         System.out.println("Waiting to handle requests!");
         awaitInitialization();
     }
