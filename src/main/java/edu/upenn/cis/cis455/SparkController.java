@@ -59,35 +59,35 @@ public class SparkController {
      * Milestone 2 only: Handle an HTTP POST request to the path
      */
     public static void post(String path, Route route) {
-        throw new UnsupportedOperationException();
+        webService.post(path, route);
     }
 
     /**
      * Milestone 2 only: Handle an HTTP PUT request to the path
      */
     public static void put(String path, Route route) {
-        throw new UnsupportedOperationException();
+        webService.put(path, route);
     }
 
     /**
      * Milestone 2 only: Handle an HTTP DELETE request to the path
      */
     public static void delete(String path, Route route) {
-        throw new UnsupportedOperationException();
+        webService.delete(path, route);
     }
 
     /**
      * Milestone 2 only: Handle an HTTP HEAD request to the path
      */
     public static void head(String path, Route route) {
-        throw new UnsupportedOperationException();
+        webService.head(path, route);
     }
 
     /**
      * Milestone 2 only: Handle an HTTP OPTIONS request to the path
      */
     public static void options(String path, Route route) {
-        throw new UnsupportedOperationException();
+        webService.options(path, route);
     }
 
     ///////////////////////////////////////////////////
