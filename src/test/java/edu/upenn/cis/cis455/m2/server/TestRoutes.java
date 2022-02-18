@@ -7,8 +7,8 @@ import org.junit.Test;
 
 import static edu.upenn.cis.cis455.m1.handling.RequestHandler.addRouteToTree;
 import static edu.upenn.cis.cis455.m1.handling.RequestHandler.getRoute;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class TestRoutes {
 
@@ -28,8 +28,30 @@ public class TestRoutes {
         GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/www");
         GetFileRoute orgTest = (GetFileRoute) getRoute("GET", "/org");
 
-        assertTrue(wwwTest.getRoot().equals("./www"));
-        assertTrue(orgTest.getRoot().equals("./org"));
+        assertEquals("./www", wwwTest.getRoot());
+        assertEquals("./org", orgTest.getRoot());
+        assertNull(getRoute("GET", "/"));
+    }
+
+    @Test
+    public void testRoutesWithWildCardAddedSuccessfully() {
+        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        wwwRoute.setRoot("./www");
+        addRouteToTree("GET", "/*/www/*/hello", wwwRoute);
+        GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/randomvalue/www/someothervalue/hello");
+
+        assertEquals("./www", wwwTest.getRoot());
+        assertNull(getRoute("GET", "/"));
+    }
+
+    @Test
+    public void testRoutesWithParamsAddedSuccessfully() {
+        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        wwwRoute.setRoot("./blah");
+        addRouteToTree("GET", "/:value1/www/:value2/hello/:value3", wwwRoute);
+        GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/randomvalue/www/someothervalue/hello/finalvalue");
+
+        assertEquals("./blah", wwwTest.getRoot());
         assertNull(getRoute("GET", "/"));
     }
 }

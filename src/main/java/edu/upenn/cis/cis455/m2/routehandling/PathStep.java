@@ -12,21 +12,24 @@ public class PathStep {
 
     final static Logger logger = LogManager.getLogger(WebService.class);
 
-    private String pathValue;
+    private String pathStepValue;
+    private String[] fullPath;
     private Route routeAssigned;
     private Map<String, PathStep> children;
+    private Map<String, PathStep> variablePathChildren;
 
-    public PathStep(String pathValue) {
-        this.pathValue = pathValue;
+    public PathStep(String pathStepValue) {
+        this.pathStepValue = pathStepValue;
         this.children = new HashMap<>();
+        this.variablePathChildren = new HashMap<>();
     }
 
-    public String getPathValue() {
-        return pathValue;
+    public String getPathStepValue() {
+        return pathStepValue;
     }
 
-    public void setPathValue(String pathValue) {
-        this.pathValue = pathValue;
+    public void setPathStepValue(String pathStepValue) {
+        this.pathStepValue = pathStepValue;
     }
 
     public Route getRouteAssigned() {
@@ -41,8 +44,9 @@ public class PathStep {
         if (curIndex <= steps.length - 1) {
             String curPathValue = steps[curIndex];
             if (curIndex == steps.length - 1) {
-                if (this.pathValue.equals(curPathValue)) {
+                if (this.pathStepValue.equals(curPathValue)) {
                     this.routeAssigned = route;
+                    this.fullPath = steps;
                     return;
                 }
                 logger.error("Stepped into Pathstep with incorrect pathvalue");
@@ -51,11 +55,21 @@ public class PathStep {
             curIndex++;
             String nextPathValue = steps[curIndex];
             PathStep nextPathStep;
-            if (this.children.containsKey(nextPathValue) && this.children.get(nextPathValue) != null) {
-                nextPathStep = this.children.get(nextPathValue);
+
+            if (isVariablePathStep(nextPathValue)) {
+                if (this.variablePathChildren.containsKey(nextPathValue) && this.variablePathChildren.get(nextPathValue) != null) {
+                    nextPathStep = this.variablePathChildren.get(nextPathValue);
+                } else {
+                    nextPathStep = new PathStep(nextPathValue);
+                    this.variablePathChildren.put(nextPathValue, nextPathStep);
+                }
             } else {
-                nextPathStep = new PathStep(nextPathValue);
-                this.children.put(nextPathValue, nextPathStep);
+                if (this.children.containsKey(nextPathValue) && this.children.get(nextPathValue) != null) {
+                    nextPathStep = this.children.get(nextPathValue);
+                } else {
+                    nextPathStep = new PathStep(nextPathValue);
+                    this.children.put(nextPathValue, nextPathStep);
+                }
             }
             nextPathStep.addRoutePath(steps, curIndex, route);
         } else {
@@ -67,7 +81,7 @@ public class PathStep {
         if (curIndex <= steps.length - 1) {
             String curPathValue = steps[curIndex];
             if (curIndex == steps.length - 1) {
-                if (this.pathValue.equals(curPathValue)) {
+                if (this.pathStepValue.equals(curPathValue) || isVariablePathStep(this.pathStepValue)) {
                     return this.routeAssigned;
                 }
                 return null;
@@ -77,13 +91,24 @@ public class PathStep {
             String nextPathValue = steps[curIndex];
             if (this.children.containsKey(nextPathValue) && this.children.get(nextPathValue) != null) {
                 return this.children.get(nextPathValue).getRoutePath(steps, curIndex);
+            } else {
+                for (PathStep variableStep : this.variablePathChildren.values()) {
+                    Route dfsRoute = variableStep.getRoutePath(steps, curIndex);
+                    if (dfsRoute != null) {
+                        return dfsRoute;
+                    }
+                }
             }
         }
         return null;
     }
 
+    private boolean isVariablePathStep(String step) {
+        return step.startsWith(":") || step.equals("*");
+    }
+
     @Override
     public int hashCode() {
-        return pathValue.hashCode();
+        return pathStepValue.hashCode();
     }
 }
