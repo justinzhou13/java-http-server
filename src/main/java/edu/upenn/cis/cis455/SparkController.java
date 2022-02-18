@@ -120,14 +120,22 @@ public class SparkController {
      * Milestone 2 only: Add filters that get called before a request
      */
     public static void before(String path, Filter... filters) {
-        throw new UnsupportedOperationException();
+        if (filters != null) {
+            for (Filter filter : filters) {
+                webService.before(path, filter);
+            }
+        }
     }
 
     /**
      * Milestone 2 only: Add filters that get called after a request
      */
     public static void after(String path, Filter... filters) {
-        throw new UnsupportedOperationException();
+        if (filters != null) {
+            for (Filter filter : filters) {
+                webService.after(path, filter);
+            }
+        }
     }
     
     

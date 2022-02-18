@@ -39,7 +39,7 @@ public class WebServer {
             }
         }));
 
-        get("/add/:part1/:part2", (request, response) -> {
+        get("/add-odds/:part1/:part2", (request, response) -> {
             int part1 = Integer.parseInt(request.params(":part1"));
             int part2 = Integer.parseInt(request.params(":part2"));
 
@@ -52,6 +52,12 @@ public class WebServer {
             response.type("text/plain");
             return "Hello, " + name + "!";
         });
+
+        after("/add-odds/*/*", ((request, response) -> {
+            if (Integer.parseInt(response.body()) % 2 == 1) {
+                throw new HaltException(400);
+            }
+        }));
 
         System.out.println("Waiting to handle requests!");
         awaitInitialization();

@@ -5,6 +5,7 @@ import edu.upenn.cis.cis455.m2.interfaces.Filter;
 import edu.upenn.cis.cis455.m2.interfaces.Request;
 import edu.upenn.cis.cis455.m2.interfaces.Response;
 import edu.upenn.cis.cis455.m2.interfaces.Route;
+import edu.upenn.cis.cis455.m2.routehandling.FilterPathStep;
 import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
 import edu.upenn.cis.cis455.m2.routehandling.PathStep;
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +25,8 @@ public class RequestHandler {
 	private static final List<Filter> beforeFilters;
 	private static final List<Filter> afterFilters;
 	private static final Map<String, PathStep> routeTrees;
+	private static final FilterPathStep beforeFilterTree;
+	private static final FilterPathStep afterFilterTree;
 
 	private static final GetFileRoute getFileRoute = new GetFileRoute();
 
@@ -39,6 +42,9 @@ public class RequestHandler {
 				response.bodyRaw(null);
 			}
 		}));
+
+		beforeFilterTree = new FilterPathStep("");
+		afterFilterTree = new FilterPathStep("");
 	}
 
 	public static void setRootDirectory(String root) {
@@ -117,6 +123,30 @@ public class RequestHandler {
 		}
 	}
 
+	public static List<Filter> getFilters(FilterPathStep rootFilterTree, String path, Map<String, String> params) {
+		synchronized (rootFilterTree) {
+			String[] pathSteps = path.split("/");
+			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
+			return rootFilterTree.getFilterByPath(pathSteps, 0, params);
+		}
+	}
+
+	public static void addBeforeFilterByPath(String path, Filter filter) {
+		synchronized (beforeFilterTree) {
+			String[] pathSteps = path.split("/");
+			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
+			beforeFilterTree.addFilterByPath(pathSteps, 0, filter);
+		}
+	}
+
+	public static void addAfterFilterByPath(String path, Filter filter) {
+		synchronized (afterFilterTree) {
+			String[] pathSteps = path.split("/");
+			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
+			afterFilterTree.addFilterByPath(pathSteps, 0, filter);
+		}
+	}
+
 	private static void checkProtocolSupported(Request req) {
 		if (!(req.protocol().equals("HTTP/1.0") || req.protocol().equals("HTTP/1.1"))) {
 			throw new HaltException(505);
@@ -129,11 +159,26 @@ public class RequestHandler {
 				filter.handle(request, response);
 			}
 		}
+		Map<String, String> beforeFilterParams = new HashMap<>();
+		List<Filter> beforeFiltersForPath = getFilters(beforeFilterTree, request.pathInfo(), beforeFilterParams);
+		((HttpRequest) request).setPathParams(beforeFilterParams);
+		applyFiltersList(beforeFiltersForPath, request, response);
 	}
 
 	private static void applyAfterFilters(Request request, Response response) throws Exception {
-		synchronized (afterFilters) {
-			for (Filter filter : afterFilters) {
+		applyFiltersList(afterFilters, request, response);
+		Map<String, String> afterFilterParams = new HashMap<>();
+		List<Filter> afterFiltersForPath = getFilters(afterFilterTree, request.pathInfo(), afterFilterParams);
+		((HttpRequest) request).setPathParams(afterFilterParams);
+		applyFiltersList(afterFiltersForPath, request, response);
+	}
+
+	private static void applyFiltersList(List<Filter> filtersList, Request request, Response response) throws Exception {
+		if (filtersList == null) {
+			return;
+		}
+		synchronized (filtersList) {
+			for (Filter filter : filtersList) {
 				filter.handle(request, response);
 			}
 		}

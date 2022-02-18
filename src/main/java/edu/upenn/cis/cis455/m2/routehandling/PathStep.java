@@ -1,7 +1,6 @@
 package edu.upenn.cis.cis455.m2.routehandling;
 
 import edu.upenn.cis.cis455.m2.interfaces.Route;
-import edu.upenn.cis.cis455.m2.server.WebService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,7 +9,7 @@ import java.util.Map;
 
 public class PathStep {
 
-    final static Logger logger = LogManager.getLogger(WebService.class);
+    final static Logger logger = LogManager.getLogger(PathStep.class);
 
     private String pathStepValue;
     private String[] fullPath;

@@ -29,7 +29,9 @@ public class GetFileRoute implements Route {
     private String root = "./www";
 
     public void setRoot(String root) {
-        this.root = root;
+        synchronized (this.root) {
+            this.root = root;
+        }
     }
 
     public String getRoot() {
@@ -44,13 +46,15 @@ public class GetFileRoute implements Route {
 
         String pathInfo = request.pathInfo();
         String fileLocationString;
-        if (pathInfo.charAt(pathInfo.length() - 1) == '/') {
-            logger.info("looking for an index.html file!");
-            fileLocationString = String.format("%s/index.html", root);
-        } else {
-            logger.info("looking for another file");
-            String fileName = pathInfo.substring(pathInfo.indexOf('/') + 1);
-            fileLocationString = String.format("%s/%s", root, fileName);
+        synchronized (this.root) {
+            if (pathInfo.charAt(pathInfo.length() - 1) == '/') {
+                logger.info("looking for an index.html file!");
+                fileLocationString = String.format("%s/index.html", root);
+            } else {
+                logger.info("looking for another file");
+                String fileName = pathInfo.substring(pathInfo.indexOf('/') + 1);
+                fileLocationString = String.format("%s/%s", root, fileName);
+            }
         }
 
         File requestedFile = new File(fileLocationString);
