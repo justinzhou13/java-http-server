@@ -97,7 +97,7 @@ public class RequestHandler {
 		}
 	}
 
-	public static edu.upenn.cis.cis455.m2.interfaces.Route getRoute(String httpMethod, String path) {
+	public static edu.upenn.cis.cis455.m2.interfaces.Route getRoute(String httpMethod, String path, Map<String, String> params) {
 		synchronized (routeTrees) {
 			if (!routeTrees.containsKey(httpMethod)) {
 				throw new HaltException(501);
@@ -105,7 +105,7 @@ public class RequestHandler {
 			PathStep root = routeTrees.get(httpMethod);
 			String[] pathSteps = path.split("/");
 			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
-			return root.getRoutePath(pathSteps, 0);
+			return root.getRoutePath(pathSteps, 0, params);
 		}
 	}
 

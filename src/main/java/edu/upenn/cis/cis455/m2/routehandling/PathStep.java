@@ -20,6 +20,7 @@ public class PathStep {
 
     public PathStep(String pathStepValue) {
         this.pathStepValue = pathStepValue;
+        this.fullPath = new String[0];
         this.children = new HashMap<>();
         this.variablePathChildren = new HashMap<>();
     }
@@ -77,11 +78,12 @@ public class PathStep {
         }
     }
 
-    public Route getRoutePath(String[] steps, int curIndex) {
+    public Route getRoutePath(String[] steps, int curIndex, Map<String, String> params) {
         if (curIndex <= steps.length - 1) {
             String curPathValue = steps[curIndex];
             if (curIndex == steps.length - 1) {
                 if (this.pathStepValue.equals(curPathValue) || isVariablePathStep(this.pathStepValue)) {
+                    fillPathParameters(params, steps);
                     return this.routeAssigned;
                 }
                 return null;
@@ -90,10 +92,10 @@ public class PathStep {
             curIndex++;
             String nextPathValue = steps[curIndex];
             if (this.children.containsKey(nextPathValue) && this.children.get(nextPathValue) != null) {
-                return this.children.get(nextPathValue).getRoutePath(steps, curIndex);
+                return this.children.get(nextPathValue).getRoutePath(steps, curIndex, params);
             } else {
                 for (PathStep variableStep : this.variablePathChildren.values()) {
-                    Route dfsRoute = variableStep.getRoutePath(steps, curIndex);
+                    Route dfsRoute = variableStep.getRoutePath(steps, curIndex, params);
                     if (dfsRoute != null) {
                         return dfsRoute;
                     }
@@ -105,6 +107,15 @@ public class PathStep {
 
     private boolean isVariablePathStep(String step) {
         return step.startsWith(":") || step.equals("*");
+    }
+
+    private void fillPathParameters(Map<String, String> params, String[] steps) {
+        for (int i = 0; i < this.fullPath.length; i++) {
+            String curRoutePathStep = this.fullPath[i];
+            if (curRoutePathStep.startsWith(":")) {
+                params.put(curRoutePathStep, steps[i]);
+            }
+        }
     }
 
     @Override
