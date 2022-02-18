@@ -1,8 +1,8 @@
 package edu.upenn.cis.cis455;
 
-import static edu.upenn.cis.cis455.SparkController.*;
-
 import org.apache.logging.log4j.Level;
+
+import static edu.upenn.cis.cis455.SparkController.*;
 
 /**
  * Initialization / skeleton class.
@@ -31,6 +31,14 @@ public class WebServer {
         	staticFileLocation(root);
         }
         // ... and above here. Leave this comment for the Spark comparator tool
+
+        get("/add/:part1/:part2", (request, response) -> {
+            int part1 = Integer.parseInt(request.params(":part1"));
+            int part2 = Integer.parseInt(request.params(":part2"));
+
+            response.type("text/plain");
+            return String.valueOf(part1 + part2);
+        });
 
         System.out.println("Waiting to handle requests!");
         awaitInitialization();

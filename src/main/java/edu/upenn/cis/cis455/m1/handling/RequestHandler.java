@@ -44,6 +44,8 @@ public class RequestHandler {
 
 			Map<String, String> pathParams = new HashMap<>();
 			Route requestedRoute = getRoute("GET", req.pathInfo(), pathParams);
+			((HttpRequest) req).setPathParams(pathParams);
+
 			boolean lookingForFile = requestMethod.equals("GET") && requestedRoute == null;
 			if (lookingForFile) {
 				handleFileRequest(req, res);
@@ -53,7 +55,10 @@ public class RequestHandler {
 			if (requestedRoute == null) throw new HaltException(404);
 
 			try {
-				requestedRoute.handle(req, res);
+				Object routeResult = requestedRoute.handle(req, res);
+				if (routeResult != null) {
+					res.body(routeResult.toString());
+				}
 			} catch (Exception e){
 				logger.error(e.getMessage());
 				throw new HaltException(500);

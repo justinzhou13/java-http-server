@@ -6,6 +6,7 @@ import edu.upenn.cis.cis455.m2.interfaces.Session;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,8 @@ public class HttpRequest extends Request {
 	private final Map<String, String> headers;
 	private final Map<String, List<String>> queryStringParms;
 	private final String ip;
+
+	private Map<String, String> pathParams;
 
 	public HttpRequest(String requestMethod,
 	                   String protocol,
@@ -56,6 +59,7 @@ public class HttpRequest extends Request {
 		this.headers = headers;
 		this.queryStringParms = queryStringParms;
 		this.ip = ip;
+		this.pathParams = new HashMap<>();
 	}
 
 	@Override
@@ -144,9 +148,13 @@ public class HttpRequest extends Request {
 		return null;
 	}
 
+	public void setPathParams(Map<String, String> pathParams) {
+		this.pathParams = pathParams;
+	}
+
 	@Override
 	public Map<String, String> params() {
-		return null;
+		return this.pathParams;
 	}
 
 	@Override

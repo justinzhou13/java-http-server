@@ -49,12 +49,12 @@ public class WebService {
 
     public static final String WORKER_WAITING_LABEL = "waiting";
     
-    private static final int DEFAULT_QUEUE_SIZE = 256;
+    private static final int DEFAULT_QUEUE_SIZE = 1024;
     
     private static final String DEFAULT_IP = "0.0.0.0";
     private static final int DEFAULT_PORT = 45555;
 	private static final String DEFAULT_ROOT = "./www";
-	private static final int DEFAULT_POOL_SIZE = 8;
+	private static final int DEFAULT_POOL_SIZE = 4;
 
     protected HttpListener listener;
     protected List<HttpWorker> httpWorkers;

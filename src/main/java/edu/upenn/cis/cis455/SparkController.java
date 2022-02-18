@@ -32,15 +32,12 @@
 package edu.upenn.cis.cis455;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m2.interfaces.Route;
 import edu.upenn.cis.cis455.m2.interfaces.Filter;
+import edu.upenn.cis.cis455.m2.interfaces.Route;
 import edu.upenn.cis.cis455.m2.interfaces.Session;
-
-// change to to edu.upenn.cis.cis455.m2 for m2
-import edu.upenn.cis.cis455.m1.server.WebService;
+import edu.upenn.cis.cis455.m2.server.WebService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import spark.Spark;
 
 public class SparkController {
 
@@ -55,7 +52,7 @@ public class SparkController {
      * Milestone 2 only: Handle an HTTP GET request to the path
      */
     public static void get(String path, Route route) {
-        throw new UnsupportedOperationException();
+        webService.get(path, route);
     }
 
     /**
