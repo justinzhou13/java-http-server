@@ -145,7 +145,7 @@ public class WebService extends edu.upenn.cis.cis455.m1.server.WebService {
      * Triggers a HaltException that terminates the request
      */
     public HaltException halt() {
-        throw new HaltException();
+        throw new HaltException(500);
     }
 
     /**
@@ -255,12 +255,16 @@ public class WebService extends edu.upenn.cis.cis455.m1.server.WebService {
     /**
      * Add filters that get called before a request
      */
-    public void before(Filter filter) {}
+    public void before(Filter filter) {
+        RequestHandler.addBeforeFilter(filter);
+    }
 
     /**
      * Add filters that get called after a request
      */
-    public void after(Filter filter) {}
+    public void after(Filter filter) {
+        RequestHandler.addAfterFilter(filter);
+    }
 
     /**
      * Add filters that get called before a request

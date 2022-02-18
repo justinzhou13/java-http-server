@@ -1,5 +1,6 @@
 package edu.upenn.cis.cis455;
 
+import edu.upenn.cis.cis455.exceptions.HaltException;
 import org.apache.logging.log4j.Level;
 
 import static edu.upenn.cis.cis455.SparkController.*;
@@ -31,6 +32,12 @@ public class WebServer {
         	staticFileLocation(root);
         }
         // ... and above here. Leave this comment for the Spark comparator tool
+        before(((request, response) -> {
+            String userAgent = request.userAgent();
+            if (userAgent == null || userAgent.isEmpty()) {
+                throw new HaltException(403);
+            }
+        }));
 
         get("/add/:part1/:part2", (request, response) -> {
             int part1 = Integer.parseInt(request.params(":part1"));

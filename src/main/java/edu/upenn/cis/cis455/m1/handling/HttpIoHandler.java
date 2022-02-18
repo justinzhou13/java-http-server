@@ -93,10 +93,11 @@ public class HttpIoHandler {
 		try {
 			OutputStream outputStream = socket.getOutputStream();
 			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
+			if (response.bodyRaw() != null) outputStream.write(response.bodyRaw());
 
-			if (response.bodyRaw() != null && !request.requestMethod().equals("HEAD")) {
-				outputStream.write(response.bodyRaw());
-			}
+			//TODO remove this if the after filter works as we'd like it to
+			/*if (response.bodyRaw() != null && !request.requestMethod().equals("HEAD")) {
+			}*/
 		} catch (IOException e) {
 			logger.error("Error writing http response to socket");
 		}
