@@ -22,6 +22,7 @@ public class HttpRequest extends Request {
 	private final int port;
 	private final String uri;
 	private final String url;
+	private final String queryString;
 
 	private final String userAgent;
 	private final Map<String, String> headers;
@@ -29,6 +30,7 @@ public class HttpRequest extends Request {
 	private final String ip;
 
 	private Map<String, String> pathParams;
+	private final Map<String, Object> attributes;
 
 	public HttpRequest(String requestMethod,
 	                   String protocol,
@@ -55,11 +57,13 @@ public class HttpRequest extends Request {
 		this.port = port;
 		this.uri = String.format("http://%s:%s%s", this.host, this.port, this.pathInfo);
 		this.url = queryString != null && queryString.length() > 0 ? String.format("%s?%s", uri, queryString) : uri;
+		this.queryString = queryString;
 		this.userAgent = userAgent;
 		this.headers = headers;
 		this.queryStringParms = queryStringParms;
 		this.ip = ip;
 		this.pathParams = new HashMap<>();
+		this.attributes = new HashMap<>();
 	}
 
 	@Override
@@ -159,37 +163,41 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String queryParams(String param) {
+		List<String> paramValues = queryStringParms.get(param);
+		if (paramValues != null) {
+			return paramValues.toString();
+		}
 		return null;
 	}
 
 	@Override
 	public List<String> queryParamsValues(String param) {
-		return null;
+		return this.queryStringParms.get(param);
 	}
 
 	@Override
 	public Set<String> queryParams() {
-		return null;
+		return this.queryStringParms.keySet();
 	}
 
 	@Override
 	public String queryString() {
-		return null;
+		return this.queryString;
 	}
 
 	@Override
 	public void attribute(String attrib, Object val) {
-
+		this.attributes.put(attrib, val);
 	}
 
 	@Override
 	public Object attribute(String attrib) {
-		return null;
+		return this.attributes.get(attrib);
 	}
 
 	@Override
 	public Set<String> attributes() {
-		return null;
+		return this.attributes.keySet();
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import edu.upenn.cis.cis455.m2.interfaces.Route;
 import edu.upenn.cis.cis455.m2.routehandling.FilterPathStep;
 import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
 import edu.upenn.cis.cis455.m2.routehandling.PathStep;
+import edu.upenn.cis.cis455.m2.routehandling.RouteHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +29,8 @@ public class RequestHandler {
 	private static final FilterPathStep beforeFilterTree;
 	private static final FilterPathStep afterFilterTree;
 
+	private static final Map<String, RouteHandler> routeHandlers;
+
 	private static final GetFileRoute getFileRoute = new GetFileRoute();
 
 	static {
@@ -45,6 +48,10 @@ public class RequestHandler {
 
 		beforeFilterTree = new FilterPathStep("");
 		afterFilterTree = new FilterPathStep("");
+
+		routeHandlers = new HashMap<>();
+		routeHandlers.put("GET", new RouteHandler());
+		routeHandlers.put("HEAD", new RouteHandler());
 	}
 
 	public static void setRootDirectory(String root) {
@@ -93,7 +100,17 @@ public class RequestHandler {
 	}
 
 	public static void addRoute(String httpMethod, String path, Route route) {
-		addRouteToTree(httpMethod, path, route);
+		//addRouteToTree(httpMethod, path, route);
+		synchronized (routeHandlers) {
+			RouteHandler routeHandler;
+			if (!routeHandlers.containsKey(httpMethod)) {
+				routeHandler = new RouteHandler();
+				routeHandlers.put(httpMethod, routeHandler);
+			} else  {
+				routeHandler = routeHandlers.get(httpMethod);
+			}
+			routeHandler.addRoute(path, route);
+		}
 	}
 
 	public static void addRouteToTree(String httpMethod, String path, Route route) {
@@ -112,6 +129,23 @@ public class RequestHandler {
 	}
 
 	public static Route getRoute(String httpMethod, String path, Map<String, String> params) {
+		RouteHandler routeHandler;
+
+		synchronized (routeHandlers) {
+			if (!routeHandlers.containsKey(httpMethod)) {
+				throw new HaltException(501);
+			}
+			routeHandler = routeHandlers.get(httpMethod);
+		}
+
+		if (routeHandler != null) {
+			return routeHandler.getRoute(path, params);
+		}
+
+		return null;
+	}
+
+	/*public static Route getRoute(String httpMethod, String path, Map<String, String> params) {
 		synchronized (routeTrees) {
 			if (!routeTrees.containsKey(httpMethod)) {
 				throw new HaltException(501);
@@ -121,7 +155,7 @@ public class RequestHandler {
 			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
 			return root.getRoutePath(pathSteps, 0, params);
 		}
-	}
+	}*/
 
 	public static List<Filter> getFilters(FilterPathStep rootFilterTree, String path, Map<String, String> params) {
 		synchronized (rootFilterTree) {

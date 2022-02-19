@@ -210,42 +210,42 @@ public class WebService extends edu.upenn.cis.cis455.m1.server.WebService {
      * Handle an HTTP GET request to the path
      */
     public void get(String path, Route route) {
-        RequestHandler.addRouteToTree("GET", path, route);
+        RequestHandler.addRoute("GET", path, route);
     }
 
     /**
      * Handle an HTTP POST request to the path
      */
     public void post(String path, Route route) {
-        RequestHandler.addRouteToTree("POST", path, route);
+        RequestHandler.addRoute("POST", path, route);
     }
 
     /**
      * Handle an HTTP PUT request to the path
      */
     public void put(String path, Route route) {
-        RequestHandler.addRouteToTree("PUT", path, route);
+        RequestHandler.addRoute("PUT", path, route);
     }
 
     /**
      * Handle an HTTP DELETE request to the path
      */
     public void delete(String path, Route route) {
-        RequestHandler.addRouteToTree("DELETE", path, route);
+        RequestHandler.addRoute("DELETE", path, route);
     }
 
     /**
      * Handle an HTTP HEAD request to the path
      */
     public void head(String path, Route route) {
-        RequestHandler.addRouteToTree("HEAD", path, route);
+        RequestHandler.addRoute("HEAD", path, route);
     }
 
     /**
      * Handle an HTTP OPTIONS request to the path
      */
     public void options(String path, Route route) {
-        RequestHandler.addRouteToTree("OPTIONS", path, route);
+        RequestHandler.addRoute("OPTIONS", path, route);
     }
 
     ///////////////////////////////////////////////////
