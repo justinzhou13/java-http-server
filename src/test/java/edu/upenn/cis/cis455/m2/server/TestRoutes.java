@@ -1,6 +1,7 @@
 package edu.upenn.cis.cis455.m2.server;
 
 import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
+import edu.upenn.cis.cis455.m2.routehandling.RouteHandler;
 import org.apache.logging.log4j.Level;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,10 +23,10 @@ public class TestRoutes {
 
     @Test
     public void testRoutesAddedSuccessfully() {
-        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        GetFileRoute wwwRoute = new GetFileRoute();
         wwwRoute.setRoot("./www");
         addRoute("GET", "/www", wwwRoute);
-        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute orgRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        GetFileRoute orgRoute = new GetFileRoute();
         orgRoute.setRoot("./org");
         addRoute("GET", "/org", orgRoute);
         GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/www", new HashMap<>());
@@ -38,7 +39,7 @@ public class TestRoutes {
 
     @Test
     public void testRoutesWithWildCardAddedSuccessfully() {
-        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        GetFileRoute wwwRoute = new GetFileRoute();
         wwwRoute.setRoot("./www");
         addRoute("GET", "/*/www/*/hello", wwwRoute);
         GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/randomvalue/www/someothervalue/hello", new HashMap<>());
@@ -49,7 +50,7 @@ public class TestRoutes {
 
     @Test
     public void testRoutesWithParamsAddedSuccessfully() {
-        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        GetFileRoute wwwRoute = new GetFileRoute();
         wwwRoute.setRoot("./blah");
         addRoute("GET", "/:value1/www/:value2/hello/:value3", wwwRoute);
         Map<String, String> params = new HashMap<>();
@@ -64,10 +65,10 @@ public class TestRoutes {
 
     @Test
     public void testRoutesWithOverlappingPathsAddedSuccessfully() {
-        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute wwwRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        GetFileRoute wwwRoute = new GetFileRoute();
         wwwRoute.setRoot("./www");
         addRoute("GET", "/route/www", wwwRoute);
-        edu.upenn.cis.cis455.m2.routehandling.GetFileRoute orgRoute = new edu.upenn.cis.cis455.m2.routehandling.GetFileRoute();
+        GetFileRoute orgRoute = new GetFileRoute();
         orgRoute.setRoot("./org");
         addRoute("GET", "/route/org", orgRoute);
         GetFileRoute wwwTest = (GetFileRoute) getRoute("GET", "/route/www", new HashMap<>());
@@ -76,5 +77,20 @@ public class TestRoutes {
         assertEquals("./www", wwwTest.getRoot());
         assertEquals("./org", orgTest.getRoot());
         assertNull(getRoute("GET", "/", new HashMap<>()));
+    }
+    
+    @Test
+    public void testRouteHierarchy() {
+        GetFileRoute wwwRoute = new GetFileRoute();
+        wwwRoute.setRoot("./www");
+        RouteHandler routeHandler = new RouteHandler();
+        routeHandler.addRoute("/*", wwwRoute);
+
+        GetFileRoute orgRoute = new GetFileRoute();
+        orgRoute.setRoot("./org");
+        routeHandler.addRoute("/hello", orgRoute);
+
+        GetFileRoute wwwTest = (GetFileRoute) routeHandler.getRoute("/hello", new HashMap<>());
+        assertEquals("./www", wwwTest.getRoot());
     }
 }
