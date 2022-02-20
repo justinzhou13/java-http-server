@@ -1,9 +1,9 @@
 package edu.upenn.cis.cis455.m2.core;
 
 import edu.upenn.cis.cis455.m2.interfaces.Session;
+import edu.upenn.cis.cis455.m2.session.SessionManager;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class WebSession extends Session {
 
-    private static final int DEFAULT_MAX_INACTIVE_INTERVAL = 3600000;
+    private static final int DEFAULT_MAX_INACTIVE_INTERVAL = 3600;
 
     private final String id;
     private final long creationTime;
@@ -21,10 +21,12 @@ public class WebSession extends Session {
 
     public WebSession() {
         this.id = UUID.randomUUID().toString();
-        this.creationTime = getNowLong();
+        this.creationTime = Instant.now().toEpochMilli();
         this.lastAccessedTime = this.creationTime;
         this.maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
         this.attributes = new HashMap<>();
+
+        SessionManager.addSession(this);
     }
 
     @Override
@@ -44,7 +46,7 @@ public class WebSession extends Session {
 
     @Override
     public void invalidate() {
-
+        SessionManager.removeSession(this);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class WebSession extends Session {
 
     @Override
     public void access() {
-        this.lastAccessedTime = getNowLong();
+        this.lastAccessedTime = Instant.now().toEpochMilli();
     }
 
     @Override
@@ -80,10 +82,5 @@ public class WebSession extends Session {
     @Override
     public void removeAttribute(String name) {
         this.attributes.remove(name);
-    }
-
-    private long getNowLong() {
-        ZonedDateTime nowGMT = ZonedDateTime.now(ZoneId.of("GMT"));
-        return nowGMT.toInstant().toEpochMilli();
     }
 }

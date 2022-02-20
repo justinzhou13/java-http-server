@@ -3,10 +3,7 @@ package edu.upenn.cis.cis455.m1.handling;
 import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m2.core.HttpRequest;
 import edu.upenn.cis.cis455.m2.filterHandling.FilterHandler;
-import edu.upenn.cis.cis455.m2.interfaces.Filter;
-import edu.upenn.cis.cis455.m2.interfaces.Request;
-import edu.upenn.cis.cis455.m2.interfaces.Response;
-import edu.upenn.cis.cis455.m2.interfaces.Route;
+import edu.upenn.cis.cis455.m2.interfaces.*;
 import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
 import edu.upenn.cis.cis455.m2.routehandling.RouteHandler;
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +36,12 @@ public class RequestHandler {
 		afterFilters.add(((request, response) -> {
 			if (request.requestMethod().equals("HEAD")) {
 				response.bodyRaw(null);
+			}
+		}));
+		afterFilters.add(((request, response) -> {
+			Session session = request.session(false);
+			if (session != null) {
+				response.cookie("JSESSIONID", session.id());
 			}
 		}));
 

@@ -4,6 +4,7 @@ import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
 import edu.upenn.cis.cis455.m2.interfaces.Request;
 import edu.upenn.cis.cis455.m2.interfaces.Session;
+import edu.upenn.cis.cis455.m2.session.SessionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,6 +33,9 @@ public class HttpRequest extends Request {
 
 	private Map<String, String> pathParams;
 	private final Map<String, Object> attributes;
+
+	private Session session;
+	private final Map<String, String> cookies;
 
 	public HttpRequest(String requestMethod,
 	                   String protocol,
@@ -65,6 +69,23 @@ public class HttpRequest extends Request {
 		this.ip = ip;
 		this.pathParams = new HashMap<>();
 		this.attributes = new HashMap<>();
+
+		this.cookies = new HashMap<>();
+		if (headers.containsKey("cookie")) {
+			String[] cookies = headers.get("cookie").split(";");
+			for (String cookie : cookies) {
+				int equalsIndex = cookie.indexOf('=');
+				if (equalsIndex != -1 && equalsIndex < cookie.length() - 1) {
+					String cookieName = cookie.substring(0, equalsIndex);
+					String cookieValue = cookie.substring(equalsIndex + 1);
+					this.cookies.put(cookieName, cookieValue);
+
+					if (cookieName.equals("JSESSIONID")) {
+						this.session = SessionManager.getSession(cookieValue);
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -145,12 +166,15 @@ public class HttpRequest extends Request {
 
 	@Override
 	public Session session() {
-		return null;
+		if (this.session == null) {
+			this.session = new WebSession();
+		}
+		return this.session;
 	}
 
 	@Override
 	public Session session(boolean create) {
-		return null;
+		return create ? new WebSession() : this.session;
 	}
 
 	public void setPathParams(Map<String, String> pathParams) {
@@ -203,6 +227,6 @@ public class HttpRequest extends Request {
 
 	@Override
 	public Map<String, String> cookies() {
-		return null;
+		return this.cookies;
 	}
 }

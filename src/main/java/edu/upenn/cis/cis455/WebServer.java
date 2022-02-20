@@ -1,6 +1,7 @@
 package edu.upenn.cis.cis455;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m2.interfaces.Session;
 import org.apache.logging.log4j.Level;
 
 import static edu.upenn.cis.cis455.SparkController.*;
@@ -56,6 +57,18 @@ public class WebServer {
             response.type("text/plain");
             return "Hello, " + name + "!";
         });
+
+        get("/count-accesses", ((request, response) -> {
+            Session session = request.session();
+            int accessCount = 1;
+            if (session.attribute("accesses") != null) {
+                accessCount = (int) session.attribute("accesses") + 1;
+            }
+            session.attribute("accesses", accessCount);
+
+            response.type("text/plain");
+            return String.format("You've attempted to get this page %s times.", accessCount);
+        }));
 
         after("/add-odds/*/*", ((request, response) -> {
             if (Integer.parseInt(response.body()) % 2 == 1) {

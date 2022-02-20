@@ -33,7 +33,13 @@ public class HttpIoHandler {
     static {
     	statusCodeToDescription = new HashMap<>();
     	statusCodeToDescription.put(200, "OK");
+	    statusCodeToDescription.put(300, "Multiple Choice");
+	    statusCodeToDescription.put(301, "Moved Permanently");
+	    statusCodeToDescription.put(302, "Found");
+	    statusCodeToDescription.put(303, "See Other");
 	    statusCodeToDescription.put(304, "Not Modified");
+	    statusCodeToDescription.put(307, "Temporary Redirect");
+	    statusCodeToDescription.put(308, "Permanent Redirect");
 		statusCodeToDescription.put(412, "Precondition Failed");
     	statusCodeToDescription.put(404, "Not Found");
 	    statusCodeToDescription.put(403, "Forbidden");
