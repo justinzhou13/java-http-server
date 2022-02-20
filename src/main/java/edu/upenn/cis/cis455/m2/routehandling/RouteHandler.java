@@ -32,6 +32,4 @@ public class RouteHandler {
             routeList.add(pathToRoutePair);
         }
     }
-
-
 }

@@ -1,13 +1,12 @@
 package edu.upenn.cis.cis455.m1.handling;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m2.filterHandling.FilterHandler;
 import edu.upenn.cis.cis455.m2.interfaces.Filter;
 import edu.upenn.cis.cis455.m2.interfaces.Request;
 import edu.upenn.cis.cis455.m2.interfaces.Response;
 import edu.upenn.cis.cis455.m2.interfaces.Route;
-import edu.upenn.cis.cis455.m2.routehandling.FilterPathStep;
 import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
-import edu.upenn.cis.cis455.m2.routehandling.PathStep;
 import edu.upenn.cis.cis455.m2.routehandling.RouteHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,19 +24,15 @@ public class RequestHandler {
 
 	private static final List<Filter> beforeFilters;
 	private static final List<Filter> afterFilters;
-	private static final Map<String, PathStep> routeTrees;
-	private static final FilterPathStep beforeFilterTree;
-	private static final FilterPathStep afterFilterTree;
 
-	private static final Map<String, RouteHandler> routeHandlers;
+	private static final FilterHandler beforeFilterHandler;
+	private static final FilterHandler afterFilterHandler;
+
+	private static final Map<String, RouteHandler> routeHandlersByMethod;
 
 	private static final GetFileRoute getFileRoute = new GetFileRoute();
 
 	static {
-		routeTrees = new HashMap<>();
-		routeTrees.put("GET", new PathStep(""));
-		routeTrees.put("HEAD", new PathStep(""));
-
 		beforeFilters = new ArrayList<>();
 		afterFilters = new ArrayList<>();
 		afterFilters.add(((request, response) -> {
@@ -46,16 +41,18 @@ public class RequestHandler {
 			}
 		}));
 
-		beforeFilterTree = new FilterPathStep("");
-		afterFilterTree = new FilterPathStep("");
+		beforeFilterHandler = new FilterHandler();
+		afterFilterHandler = new FilterHandler();
 
-		routeHandlers = new HashMap<>();
-		routeHandlers.put("GET", new RouteHandler());
-		routeHandlers.put("HEAD", new RouteHandler());
+		routeHandlersByMethod = new HashMap<>();
+		routeHandlersByMethod.put("GET", new RouteHandler());
+		routeHandlersByMethod.put("HEAD", new RouteHandler());
 	}
 
 	public static void setRootDirectory(String root) {
-		getFileRoute.setRoot(root);
+		synchronized (getFileRoute) {
+			getFileRoute.setRoot(root);
+		}
 	}
 
 	//TODO replace map of routes with route tree
@@ -67,8 +64,10 @@ public class RequestHandler {
 			applyBeforeFilters(req, res);
 
 			String requestMethod = req.requestMethod().equals("HEAD") ? "GET" : req.requestMethod();
-			PathStep routeTreeRoot = routeTrees.get(requestMethod);
-			if (routeTreeRoot == null) throw new HaltException(501);
+
+			synchronized (routeHandlersByMethod) {
+				if (!routeHandlersByMethod.containsKey(req.requestMethod())) throw new HaltException(501);
+			}
 
 			Map<String, String> pathParams = new HashMap<>();
 			Route requestedRoute = getRoute("GET", req.pathInfo(), pathParams);
@@ -96,46 +95,32 @@ public class RequestHandler {
 	}
 
 	public static void handleFileRequest(Request req, Response res) throws Exception {
-		getFileRoute.handle(req, res);
-	}
-
-	public static void addRoute(String httpMethod, String path, Route route) {
-		//addRouteToTree(httpMethod, path, route);
-		synchronized (routeHandlers) {
-			RouteHandler routeHandler;
-			if (!routeHandlers.containsKey(httpMethod)) {
-				routeHandler = new RouteHandler();
-				routeHandlers.put(httpMethod, routeHandler);
-			} else  {
-				routeHandler = routeHandlers.get(httpMethod);
-			}
-			routeHandler.addRoute(path, route);
+		synchronized (getFileRoute) {
+			getFileRoute.handle(req, res);
 		}
 	}
 
-	public static void addRouteToTree(String httpMethod, String path, Route route) {
-		synchronized (routeTrees) {
-			PathStep root;
-			if (!routeTrees.containsKey(httpMethod)) {
-				root = new PathStep("");
-				routeTrees.put(httpMethod, root);
-			} else {
-				root = routeTrees.get(httpMethod);
+	public static void addRoute(String httpMethod, String path, Route route) {
+		synchronized (routeHandlersByMethod) {
+			RouteHandler routeHandler;
+			if (!routeHandlersByMethod.containsKey(httpMethod)) {
+				routeHandler = new RouteHandler();
+				routeHandlersByMethod.put(httpMethod, routeHandler);
+			} else  {
+				routeHandler = routeHandlersByMethod.get(httpMethod);
 			}
-			String[] pathSteps = path.split("/");
-			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
-			root.addRoutePath(pathSteps, 0, route);
+			routeHandler.addRoute(path, route);
 		}
 	}
 
 	public static Route getRoute(String httpMethod, String path, Map<String, String> params) {
 		RouteHandler routeHandler;
 
-		synchronized (routeHandlers) {
-			if (!routeHandlers.containsKey(httpMethod)) {
+		synchronized (routeHandlersByMethod) {
+			if (!routeHandlersByMethod.containsKey(httpMethod)) {
 				throw new HaltException(501);
 			}
-			routeHandler = routeHandlers.get(httpMethod);
+			routeHandler = routeHandlersByMethod.get(httpMethod);
 		}
 
 		if (routeHandler != null) {
@@ -143,79 +128,6 @@ public class RequestHandler {
 		}
 
 		return null;
-	}
-
-	/*public static Route getRoute(String httpMethod, String path, Map<String, String> params) {
-		synchronized (routeTrees) {
-			if (!routeTrees.containsKey(httpMethod)) {
-				throw new HaltException(501);
-			}
-			PathStep root = routeTrees.get(httpMethod);
-			String[] pathSteps = path.split("/");
-			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
-			return root.getRoutePath(pathSteps, 0, params);
-		}
-	}*/
-
-	public static List<Filter> getFilters(FilterPathStep rootFilterTree, String path, Map<String, String> params) {
-		synchronized (rootFilterTree) {
-			String[] pathSteps = path.split("/");
-			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
-			return rootFilterTree.getFilterByPath(pathSteps, 0, params);
-		}
-	}
-
-	public static void addBeforeFilterByPath(String path, Filter filter) {
-		synchronized (beforeFilterTree) {
-			String[] pathSteps = path.split("/");
-			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
-			beforeFilterTree.addFilterByPath(pathSteps, 0, filter);
-		}
-	}
-
-	public static void addAfterFilterByPath(String path, Filter filter) {
-		synchronized (afterFilterTree) {
-			String[] pathSteps = path.split("/");
-			pathSteps = pathSteps.length > 0 ? pathSteps : new String[]{""};
-			afterFilterTree.addFilterByPath(pathSteps, 0, filter);
-		}
-	}
-
-	private static void checkProtocolSupported(Request req) {
-		if (!(req.protocol().equals("HTTP/1.0") || req.protocol().equals("HTTP/1.1"))) {
-			throw new HaltException(505);
-		}
-	}
-
-	private static void applyBeforeFilters(Request request, Response response) throws Exception {
-		synchronized (beforeFilters) {
-			for (Filter filter : beforeFilters) {
-				filter.handle(request, response);
-			}
-		}
-		Map<String, String> beforeFilterParams = new HashMap<>();
-		List<Filter> beforeFiltersForPath = getFilters(beforeFilterTree, request.pathInfo(), beforeFilterParams);
-		((HttpRequest) request).setPathParams(beforeFilterParams);
-		applyFiltersList(beforeFiltersForPath, request, response);
-	}
-
-	private static void applyAfterFilters(Request request, Response response) throws Exception {
-		applyFiltersList(afterFilters, request, response);
-		Map<String, String> afterFilterParams = new HashMap<>();
-		List<Filter> afterFiltersForPath = getFilters(afterFilterTree, request.pathInfo(), afterFilterParams);
-		((HttpRequest) request).setPathParams(afterFilterParams);
-		applyFiltersList(afterFiltersForPath, request, response);
-	}
-
-	private static void applyFiltersList(List<Filter> filtersList, Request request, Response response) throws Exception {
-		if (filtersList == null) {
-			return;
-		}
-		synchronized (filtersList) {
-			for (Filter filter : filtersList) {
-				filter.handle(request, response);
-			}
-		}
 	}
 
 	public static void addBeforeFilter(Filter filter) {
@@ -227,6 +139,78 @@ public class RequestHandler {
 	public static void addAfterFilter(Filter filter) {
 		synchronized (afterFilters) {
 			afterFilters.add(filter);
+		}
+	}
+
+	public static void addBeforeFilterByPath(String path, Filter filter) {
+		synchronized (beforeFilterHandler) {
+			beforeFilterHandler.addFilter(path, filter);
+		}
+	}
+
+	public static void addAfterFilterByPath(String path, Filter filter) {
+		synchronized (afterFilterHandler) {
+			afterFilterHandler.addFilter(path, filter);
+		}
+	}
+
+	private static void applyBeforeFilters(Request request, Response response) throws Exception {
+		synchronized (beforeFilters) {
+			applyFiltersList(beforeFilters, new HashMap<>(), request, response);
+		}
+
+		Map<String, List<Filter>> matchingFilters;
+		synchronized (beforeFilterHandler) {
+			matchingFilters = beforeFilterHandler.getMatchingRegisteredPaths(request.pathInfo());
+		}
+
+		for (Map.Entry<String, List<Filter>> filterList : matchingFilters.entrySet()) {
+			Map<String, String> pathParamsForRegisteredPath = new HashMap<>();
+			FilterHandler.matchPathToStepsAndPopulateParams(request.pathInfo(), filterList.getKey(), pathParamsForRegisteredPath);
+			((HttpRequest) request).setPathParams(pathParamsForRegisteredPath);
+
+			applyFiltersList(filterList.getValue(), pathParamsForRegisteredPath, request, response);
+		}
+	}
+
+	private static void applyAfterFilters(Request request, Response response) throws Exception {
+		synchronized (afterFilters) {
+			applyFiltersList(afterFilters, new HashMap<>(), request, response);
+		}
+
+		Map<String, List<Filter>> matchingFilters;
+		synchronized (afterFilterHandler) {
+			matchingFilters = afterFilterHandler.getMatchingRegisteredPaths(request.pathInfo());
+		}
+
+		for (Map.Entry<String, List<Filter>> filterList : matchingFilters.entrySet()) {
+			Map<String, String> pathParamsForRegisteredPath = new HashMap<>();
+			FilterHandler.matchPathToStepsAndPopulateParams(request.pathInfo(), filterList.getKey(), pathParamsForRegisteredPath);
+			((HttpRequest) request).setPathParams(pathParamsForRegisteredPath);
+
+			applyFiltersList(filterList.getValue(), pathParamsForRegisteredPath, request, response);
+		}
+	}
+
+	private static void checkProtocolSupported(Request req) {
+		if (!(req.protocol().equals("HTTP/1.0") || req.protocol().equals("HTTP/1.1"))) {
+			throw new HaltException(505);
+		}
+	}
+
+	private static void applyFiltersList(
+			List<Filter> filtersList,
+			Map<String, String> pathParams,
+			Request request,
+			Response response) throws Exception {
+
+		if (filtersList == null) {
+			return;
+		}
+
+		((HttpRequest) request).setPathParams(pathParams);
+		for (Filter filter : filtersList) {
+			filter.handle(request, response);
 		}
 	}
 }

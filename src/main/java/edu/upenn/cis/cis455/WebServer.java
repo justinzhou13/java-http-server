@@ -32,11 +32,15 @@ public class WebServer {
         	staticFileLocation(root);
         }
         // ... and above here. Leave this comment for the Spark comparator tool
-        before(((request, response) -> {
+        before("/add-odds/:part1/:part2", ((request, response) -> {
             String userAgent = request.userAgent();
             if (userAgent == null || userAgent.isEmpty()) {
                 throw new HaltException(403);
             }
+        }));
+
+        before("/add-odds/:part1/:part2", ((request, response) -> {
+            request.attribute("wasArithmeticFunction", true);
         }));
 
         get("/add-odds/:part1/:part2", (request, response) -> {
@@ -56,6 +60,12 @@ public class WebServer {
         after("/add-odds/*/*", ((request, response) -> {
             if (Integer.parseInt(response.body()) % 2 == 1) {
                 throw new HaltException(400);
+            }
+        }));
+
+        after("/*/*", ((request, response) -> {
+            if (request.attribute("wasArithmeticFunction") == null) {
+                throw new HaltException(404);
             }
         }));
 

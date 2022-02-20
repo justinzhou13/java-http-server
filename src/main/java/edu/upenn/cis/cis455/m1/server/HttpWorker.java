@@ -119,7 +119,9 @@ public class HttpWorker implements Runnable {
 				closeSocket(socket);
 			};
 		} catch (Exception e) {
-			logger.error("Exception occured while processing request: " + e.getMessage());
+			logger.error("Exception occured while processing request: ", e);
+			HttpIoHandler.sendException(socket, request, new HaltException(500));
+			closeSocket(socket);
 		}
 
 		updateControlPanelStatus(WebService.WORKER_WAITING_LABEL);
