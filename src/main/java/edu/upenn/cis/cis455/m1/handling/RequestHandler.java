@@ -2,6 +2,7 @@ package edu.upenn.cis.cis455.m1.handling;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m2.core.HttpRequest;
+import edu.upenn.cis.cis455.m2.core.HttpResponse;
 import edu.upenn.cis.cis455.m2.filterHandling.FilterHandler;
 import edu.upenn.cis.cis455.m2.interfaces.*;
 import edu.upenn.cis.cis455.m2.routehandling.GetFileRoute;
@@ -32,12 +33,13 @@ public class RequestHandler {
 
 	static {
 		beforeFilters = new ArrayList<>();
-		afterFilters = new ArrayList<>();
-		afterFilters.add(((request, response) -> {
+		beforeFilters.add(((request, response) -> {
 			if (request.requestMethod().equals("HEAD")) {
-				response.bodyRaw(null);
+				((HttpResponse) response).setHeadResponse(true);
 			}
 		}));
+
+		afterFilters = new ArrayList<>();
 		afterFilters.add(((request, response) -> {
 			Session session = request.session(false);
 			if (session != null) {
@@ -74,7 +76,7 @@ public class RequestHandler {
 			}
 
 			Map<String, String> pathParams = new HashMap<>();
-			Route requestedRoute = getRoute("GET", req.pathInfo(), pathParams);
+			Route requestedRoute = getRoute(requestMethod, req.pathInfo(), pathParams);
 			((HttpRequest) req).setPathParams(pathParams);
 
 			boolean lookingForFile = requestMethod.equals("GET") && requestedRoute == null;

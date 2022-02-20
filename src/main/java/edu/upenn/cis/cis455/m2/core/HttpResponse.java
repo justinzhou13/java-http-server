@@ -10,6 +10,7 @@ public class HttpResponse extends Response {
 
 	private final Map<String, String> headers;
 	private final Map<String, Cookie> nameToCookie;
+	private boolean isHeadResponse;
 
 	public HttpResponse(Map<String, String> headers) {
 		this.headers = headers != null ? headers : new HashMap<>();
@@ -18,6 +19,10 @@ public class HttpResponse extends Response {
 
 	public void removeHeader(String header) {
 		headers.remove(header);
+	}
+
+	public void setHeadResponse(boolean headResponse) {
+		isHeadResponse = headResponse;
 	}
 
 	@Override
@@ -38,6 +43,16 @@ public class HttpResponse extends Response {
 	public void body(String body) {
 		if (body != null) bodyRaw(body.getBytes(StandardCharsets.UTF_8));
 		else bodyRaw(null);
+	}
+
+	@Override
+	public String body() {
+		return isHeadResponse ? null : super.body();
+	}
+
+	@Override
+	public byte[] bodyRaw() {
+		return isHeadResponse ? null: super.bodyRaw();
 	}
 
 	@Override

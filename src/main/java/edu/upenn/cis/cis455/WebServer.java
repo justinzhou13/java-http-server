@@ -4,6 +4,8 @@ import edu.upenn.cis.cis455.exceptions.HaltException;
 import edu.upenn.cis.cis455.m2.interfaces.Session;
 import org.apache.logging.log4j.Level;
 
+import java.math.BigInteger;
+
 import static edu.upenn.cis.cis455.SparkController.*;
 
 /**
@@ -80,16 +82,20 @@ public class WebServer {
             return "Congratulations! You've goten the page more than 10 times.";
         }));
 
-        after("/add-odds/*/*", ((request, response) -> {
-            if (Integer.parseInt(response.body()) % 2 == 1) {
+        get("/factorial/:target", ((request, response) -> {
+            BigInteger out = BigInteger.valueOf(1L);
+            try {
+                Integer target = Integer.parseInt(request.params(":target"));
+                while (target > 0) {
+                    out = out.multiply(BigInteger.valueOf(target));
+                    target--;
+                }
+            } catch (NumberFormatException | NullPointerException e) {
                 throw new HaltException(400);
             }
-        }));
 
-        after("/*/*", ((request, response) -> {
-            if (request.attribute("wasArithmeticFunction") == null) {
-                throw new HaltException(404);
-            }
+            response.type("text/plain");
+            return out.toString();
         }));
 
         System.out.println("Waiting to handle requests!");
