@@ -1,6 +1,7 @@
 package edu.upenn.cis.cis455.m1.handling;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m2.core.HttpRequest;
 import edu.upenn.cis.cis455.m2.filterHandling.FilterHandler;
 import edu.upenn.cis.cis455.m2.interfaces.Filter;
 import edu.upenn.cis.cis455.m2.interfaces.Request;
