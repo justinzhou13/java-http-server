@@ -66,8 +66,18 @@ public class WebServer {
             }
             session.attribute("accesses", accessCount);
 
+            if (accessCount > 10) {
+                response.redirect("/congratulations");
+                return null;
+            }
+
             response.type("text/plain");
             return String.format("You've attempted to get this page %s times.", accessCount);
+        }));
+
+        get("/congratulations", ((request, response) -> {
+            response.type("text/plain");
+            return "Congratulations! You've goten the page more than 10 times.";
         }));
 
         after("/add-odds/*/*", ((request, response) -> {

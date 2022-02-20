@@ -56,14 +56,17 @@ public class HttpIoHandler {
 		Map<String, List<String>> parms = new HashMap<>();
 		Map<String, String> headers = new HashMap<>();
 		HttpParsing.decodeHeader(in, pre, parms, headers);
+
 	    String host = socket.getInetAddress().getHostName();
 		int port = socket.getLocalPort();
 		String ip = socket.getInetAddress().getHostAddress();
-		
+		String body = "";
+
 	    return buildRequest(
 				host,
 			    port,
 			    ip,
+				body,
 			    pre,
 			    parms,
 			    headers);
@@ -84,7 +87,7 @@ public class HttpIoHandler {
 			OutputStream outputStream = socket.getOutputStream();
 			outputStream.write(responseString.getBytes(StandardCharsets.UTF_8));
 		} catch (IOException e) {
-			logger.error("Error writing exception to socket");
+			logger.error("Error writing exception to socket", e);
 		}
 
 	    return request != null && request.persistentConnection();
@@ -107,7 +110,7 @@ public class HttpIoHandler {
 			/*if (response.bodyRaw() != null && !request.requestMethod().equals("HEAD")) {
 			}*/
 		} catch (IOException e) {
-			logger.error("Error writing http response to socket");
+			logger.error("Error writing http response to socket", e);
 		}
 
 	    return request != null && request.persistentConnection();
@@ -117,6 +120,7 @@ public class HttpIoHandler {
 			String host,
 			int port,
 			String ip,
+			String body,
 			Map<String, String> pre,
 			Map<String, List<String>> parms,
 			Map<String, String> headers) {
@@ -130,7 +134,8 @@ public class HttpIoHandler {
 				headers,
 				pre.get("queryString"),
 				parms,
-				ip
+				ip,
+				body
 		);
 	}
 

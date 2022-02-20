@@ -19,17 +19,18 @@ public class SessionManager {
     }
 
     public static Session getSession(String id) {
+        Session session;
         synchronized (activeSessions) {
-            Session session = activeSessions.get(id);
-            if (session != null) {
-                if (session.lastAccessedTime() + session.maxInactiveInterval() * 1000L < Instant.now().toEpochMilli()) {
-                    removeSession(session);
-                    return null;
-                }
-                session.access();
-            }
-            return session;
+            session = activeSessions.get(id);
         }
+        if (session != null) {
+            if (session.lastAccessedTime() + session.maxInactiveInterval() * 1000L < Instant.now().toEpochMilli()) {
+                removeSession(session);
+                return null;
+            }
+            session.access();
+        }
+        return session;
     }
 
     public static void addSession(Session session) {

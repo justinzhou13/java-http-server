@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class WebSession extends Session {
 
-    private static final int DEFAULT_MAX_INACTIVE_INTERVAL = 3600;
+    private static final int DEFAULT_MAX_INACTIVE_INTERVAL = 10;
 
     private final String id;
     private final long creationTime;

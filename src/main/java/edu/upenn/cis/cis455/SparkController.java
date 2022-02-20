@@ -32,10 +32,12 @@
 package edu.upenn.cis.cis455;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m2.core.WebSession;
 import edu.upenn.cis.cis455.m2.interfaces.Filter;
 import edu.upenn.cis.cis455.m2.interfaces.Route;
 import edu.upenn.cis.cis455.m2.interfaces.Session;
 import edu.upenn.cis.cis455.m2.server.WebService;
+import edu.upenn.cis.cis455.m2.session.SessionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -216,10 +218,10 @@ public class SparkController {
     }
 
     public static String createSession() {
-        throw new UnsupportedOperationException();
+        return new WebSession().id();
     }
 
     public static Session getSession(String id) {
-        throw new UnsupportedOperationException();
+        return SessionManager.getSession(id);
     }
 }

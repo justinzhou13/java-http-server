@@ -30,6 +30,7 @@ public class HttpRequest extends Request {
 	private final Map<String, String> headers;
 	private final Map<String, List<String>> queryStringParms;
 	private final String ip;
+	private final String body;
 
 	private Map<String, String> pathParams;
 	private final Map<String, Object> attributes;
@@ -46,7 +47,8 @@ public class HttpRequest extends Request {
 	                   Map<String, String> headers,
 	                   String queryString,
 	                   Map<String, List<String>> queryStringParms,
-	                   String ip) {
+	                   String ip,
+	                   String body) {
 		if (requestMethod == null || protocol == null || pathInfo == null || host == null) {
 			throw new HaltException(400);
 		}
@@ -67,6 +69,7 @@ public class HttpRequest extends Request {
 		this.headers = headers;
 		this.queryStringParms = queryStringParms;
 		this.ip = ip;
+		this.body = body;
 		this.pathParams = new HashMap<>();
 		this.attributes = new HashMap<>();
 
