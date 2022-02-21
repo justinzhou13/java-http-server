@@ -39,12 +39,49 @@ public class PathToRoutePair {
         return true;
     }
 
-    private String[] convertPathToSteps(String path) {
+    public static boolean matchPathToMultistepWildcard(String pathToMatch, String definedPath) {
+        String[] pathToMatchSteps = convertPathToSteps(pathToMatch);
+        String[] definedPathSteps = convertPathToSteps(definedPath);
+        return matchPathStepsToWildcardPath(definedPathSteps, pathToMatchSteps);
+    }
+
+    private static boolean matchPathStepsToWildcardPath(String[] definedPathSteps, String[] pathToMatchSteps) {
+        int definedPathIndex = 0;
+        int pathToMatchIndex = 0;
+        String definedPathStep = definedPathSteps[definedPathIndex];
+        String pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
+        while (definedPathIndex < definedPathSteps.length - 1 && pathToMatchIndex < pathToMatchSteps.length - 1) {
+            if (!definedPathStep.equals("*") && !definedPathStep.equals(pathToMatchStep)) {
+                return false;
+            } else if (!definedPathStep.equals("*")) {
+                definedPathIndex++;
+                definedPathStep = definedPathSteps[definedPathIndex];
+
+                pathToMatchIndex++;
+                pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
+            } else {
+                do {
+                    definedPathIndex++;
+                    definedPathStep = definedPathSteps[definedPathIndex];
+
+                    pathToMatchIndex++;
+                    pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
+                } while (definedPathStep.equals("*") && definedPathIndex < definedPathSteps.length - 1);
+                while (!definedPathStep.equals(pathToMatchStep) && pathToMatchIndex < pathToMatchSteps.length - 1) {
+                    pathToMatchIndex++;
+                    pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
+                }
+            }
+        }
+        return definedPathIndex == definedPathSteps.length - 1 && (definedPathStep.equals("*") || (definedPathStep.equals(pathToMatchStep) && pathToMatchIndex == pathToMatchSteps.length - 1));
+    }
+
+    private static String[] convertPathToSteps(String path) {
         String[] pathSteps = path.split("/");
         return pathSteps.length > 0 ? pathSteps : new String[]{""};
     }
 
-    private boolean isVariablePathStep(String step) {
+    private static boolean isVariablePathStep(String step) {
         return step.startsWith(":") || step.equals("*");
     }
 }
