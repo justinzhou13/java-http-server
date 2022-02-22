@@ -33,6 +33,7 @@ import edu.upenn.cis.cis455.m1.handling.ControlPanelRoute;
 import edu.upenn.cis.cis455.m1.handling.RequestHandler;
 import edu.upenn.cis.cis455.m1.handling.ShutdownRoute;
 import edu.upenn.cis.cis455.m1.handling.ShutdownStateWrapper;
+import edu.upenn.cis.cis455.m2.routehandling.ErrorLogRoute;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,13 +59,17 @@ public class WebService {
 
     protected HttpListener listener;
     protected List<HttpWorker> httpWorkers;
-    private final Map<String, String> workerThreadNameToStatus;
+    public static final Map<String, String> workerThreadNameToStatus;
 	
 	private String ip;
 	private int port;
 	private String root;
 	private int poolSize;
     private HttpTaskQueue taskQueue;
+
+    static {
+        workerThreadNameToStatus = new HashMap<>();
+    }
 
 	public WebService() {
 		ip = DEFAULT_IP;
@@ -77,10 +82,10 @@ public class WebService {
 
         ShutdownStateWrapper.setHttpTaskQueue(taskQueue);
 
-        ShutdownRoute shutdownRoute = new ShutdownRoute();
-        addRoute("GET", "/shutdown", shutdownRoute);
+        addRoute("GET", "/shutdown", new ShutdownRoute());
 
-        workerThreadNameToStatus = new HashMap<>();
+        addRoute("GET", "/error", new ErrorLogRoute());
+
         addRoute("GET", "/control", new ControlPanelRoute(workerThreadNameToStatus));
 	}
 
@@ -101,7 +106,7 @@ public class WebService {
 		logger.debug("Spinning up worker pool");
 		httpWorkers = new ArrayList<>();
     	for (int i = 0; i < poolSize; i++) {
-    		HttpWorker worker = new HttpWorker(taskQueue, workerThreadNameToStatus);
+    		HttpWorker worker = new HttpWorker(taskQueue);
             httpWorkers.add(worker);
 
     		Thread workerThread = new Thread(worker);

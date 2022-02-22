@@ -57,11 +57,17 @@ public class GetFileRoute implements Route {
             }
         }
 
+        populateResponseWithFile(fileLocationString, root, request, response);
+
+        return null;
+    }
+
+    public static void populateResponseWithFile(String fileLocationString, String root, Request request, Response response) {
         File requestedFile = new File(fileLocationString);
         try {
             Path filePath = requestedFile.toPath();
 
-            checkFileIsInRootDirectory(requestedFile);
+            checkFileIsInRootDirectory(requestedFile, root);
 
             String contentType = Files.probeContentType(filePath);
             response.type(contentType);
@@ -79,24 +85,23 @@ public class GetFileRoute implements Route {
             logger.error(String.format("Could not get file for path %s", fileLocationString));
             throw new HaltException(404);
         }
-        return null;
     }
 
-    private void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
+    private static void handleModifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
         LocalDateTime ifModifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-modified-since"));
         if (ifModifiedSinceTime != null && lastModifiedTime.isBefore(ifModifiedSinceTime)) {
             throw new HaltException(304);
         }
     }
 
-    private void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
+    private static void handleUnmodifiedSinceIfNecessary(LocalDateTime lastModifiedTime, Request req) {
         LocalDateTime ifUnmodifiedSinceTime = attemptParseModifiedSinceHeader(req.headers("if-unmodified-since"));
         if (ifUnmodifiedSinceTime != null && lastModifiedTime.isAfter(ifUnmodifiedSinceTime)) {
             throw new HaltException(412);
         }
     }
 
-    private LocalDateTime attemptParseModifiedSinceHeader(String ifModifiedSince) {
+    private static LocalDateTime attemptParseModifiedSinceHeader(String ifModifiedSince) {
         if (ifModifiedSince == null) {
             return null;
         }
@@ -124,7 +129,7 @@ public class GetFileRoute implements Route {
         return null;
     }
 
-    private void checkFileIsInRootDirectory(File requestedFile) {
+    private static void checkFileIsInRootDirectory(File requestedFile, String root) {
         File rootDirectory = new File(root);
         String rootDirectoryURI = rootDirectory.toURI().normalize().toString();
         String requestedFileURI = requestedFile.toURI().normalize().toString();

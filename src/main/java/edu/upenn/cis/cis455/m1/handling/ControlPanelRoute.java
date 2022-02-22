@@ -24,6 +24,9 @@ public class ControlPanelRoute implements Route {
                 "</tr>\n" +
                 "%s" +
             "</table>\n" +
+            "<br>\n" +
+            "<a href=/error>Error log for this server</a>\n" +
+            "<br>\n" +
             "<a href=/shutdown><button>Shut down the server</button></a>\n" +
             "</body>\n" +
             "</html>";

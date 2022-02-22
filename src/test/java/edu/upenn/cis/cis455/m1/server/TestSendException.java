@@ -82,7 +82,7 @@ public class TestSendException {
                 byteArrayOutputStream);
 
         HttpTask testTask = new HttpTask(s);
-        HttpWorker testWorker = new HttpWorker(null, null);
+        HttpWorker testWorker = new HttpWorker(null);
         testWorker.process(testTask);
 
         String result = byteArrayOutputStream.toString("UTF-8").replace("\r", "");
@@ -99,7 +99,7 @@ public class TestSendException {
                 byteArrayOutputStream);
 
         HttpTask testTask = new HttpTask(s);
-        HttpWorker testWorker = new HttpWorker(null, null);
+        HttpWorker testWorker = new HttpWorker(null);
         testWorker.process(testTask);
 
         String result = byteArrayOutputStream.toString("UTF-8").replace("\r", "");
@@ -116,7 +116,7 @@ public class TestSendException {
                 byteArrayOutputStream);
 
         HttpTask testTask = new HttpTask(s);
-        HttpWorker testWorker = new HttpWorker(null, null);
+        HttpWorker testWorker = new HttpWorker(null);
         testWorker.process(testTask);
 
         String result = byteArrayOutputStream.toString("UTF-8").replace("\r", "");

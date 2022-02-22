@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Stub class for a thread worker that handles Web requests
@@ -23,13 +22,10 @@ public class HttpWorker implements Runnable {
 	static final Logger logger = LogManager.getLogger(HttpWorker.class);
 	
 	private final HttpTaskQueue taskQueue;
-	private final Map<String, String> workerNameToStatuses;
 	private String workerThreadName = "";
 	
-	public HttpWorker(HttpTaskQueue taskQueue,
-	                  Map<String, String> workerNameToStatuses) {
+	public HttpWorker(HttpTaskQueue taskQueue) {
 		this.taskQueue = taskQueue;
-		this.workerNameToStatuses = workerNameToStatuses;
 	}
 
 	public void setWorkerThreadName(String workerThreadName) {
@@ -130,8 +126,8 @@ public class HttpWorker implements Runnable {
 
 	private void updateControlPanelStatus(String status) {
 		try {
-			synchronized (workerNameToStatuses) {
-				workerNameToStatuses.put(workerThreadName, status);
+			synchronized (WebService.workerThreadNameToStatus) {
+				WebService.workerThreadNameToStatus.put(workerThreadName, status);
 			}
 		} catch (Exception e) {
 			logger.error("Error updating control panel status");

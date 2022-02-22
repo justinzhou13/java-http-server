@@ -6,13 +6,20 @@ Configuration:
       name: Console
       target: SYSTEM_OUT
     File:
-      PatternLayout:
+    - PatternLayout:
         pattern: '%d{yyyy-MMM-dd HH:mm:ss a} [%t] %-5level %logger{36} - %msg%n'
       name: File
       fileName: app.log
+    - PatternLayout:
+        pattern: '%d{yyyy-MMM-dd HH:mm:ss a} [%t] %-5level %logger{36} - %msg%n'
+      name: Error-Appender
+      fileName: errors.log
   Loggers:
     Root:
       AppenderRef:
       - ref: Console
+        level: trace
       - ref: File
-      level: trace
+        level: trace
+      - ref: Error-Appender
+        level: error
