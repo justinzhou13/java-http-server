@@ -76,8 +76,16 @@ public class RequestHandler {
 			}
 
 			Map<String, String> pathParams = new HashMap<>();
-			Route requestedRoute = getRoute(requestMethod, req.pathInfo(), pathParams);
+			List<String> splat = new ArrayList<>();
+			Route requestedRoute = getRoute(requestMethod, req.pathInfo(), pathParams, splat);
 			((HttpRequest) req).setPathParams(pathParams);
+			try {
+				((HttpRequest) req).setSplat((String[]) splat.toArray());
+			} catch (ClassCastException e) {
+				logger.error(e);
+				throw new HaltException(500);
+			}
+
 
 			boolean lookingForFile = requestMethod.equals("GET") && requestedRoute == null;
 			if (lookingForFile) {
@@ -119,7 +127,7 @@ public class RequestHandler {
 		}
 	}
 
-	public static Route getRoute(String httpMethod, String path, Map<String, String> params) {
+	public static Route getRoute(String httpMethod, String path, Map<String, String> params, List<String> splat) {
 		RouteHandler routeHandler;
 
 		synchronized (routeHandlersByMethod) {
@@ -130,7 +138,7 @@ public class RequestHandler {
 		}
 
 		if (routeHandler != null) {
-			return routeHandler.getRoute(path, params);
+			return routeHandler.getRoute(path, params, splat);
 		}
 
 		return null;

@@ -3,8 +3,10 @@ package edu.upenn.cis.cis455.m2.server;
 import edu.upenn.cis.cis455.m2.routehandling.PathToRoutePair;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static org.junit.Assert.*;
 
 public class TestPathMatching {
 
@@ -13,7 +15,7 @@ public class TestPathMatching {
         String definedPath = "/hello";
         String requestedPath = "/hello";
 
-        assertTrue(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertTrue(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
@@ -21,7 +23,7 @@ public class TestPathMatching {
         String definedPath = "/hello/world/path";
         String requestedPath = "/hello/world/path";
 
-        assertTrue(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertTrue(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
@@ -29,7 +31,7 @@ public class TestPathMatching {
         String definedPath = "/hello/world/path";
         String requestedPath = "/hello/world";
 
-        assertFalse(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertFalse(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
@@ -37,7 +39,7 @@ public class TestPathMatching {
         String definedPath = "/hello/world";
         String requestedPath = "/hello/world/path";
 
-        assertFalse(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertFalse(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
@@ -45,15 +47,15 @@ public class TestPathMatching {
         String definedPath = "/*";
         String requestedPath = "/hello/world/path";
 
-        assertTrue(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertTrue(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
     public void testWildCardPathMultistepMatches() {
         String definedPath = "/*/world/*";
-        String requestedPath = "/hello/spacer/world/path/spacer/";
+        String requestedPath = "/hello/world/path/spacer/lol/spacer";
 
-        assertTrue(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertTrue(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
@@ -61,14 +63,30 @@ public class TestPathMatching {
         String definedPath = "/*/hello";
         String requestedPath = "/hello";
 
-        assertFalse(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        assertFalse(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), new ArrayList<>()));
     }
 
     @Test
-    public void testMultiWildCardNoMatch() {
-        String definedPath = "/*/*/hello/*";
-        String requestedPath = "/hello/hello/hello";
+    public void testSplat() {
+        String definedPath = "/*/*";
+        String requestedPath = "/hello/1/2/3/4";
 
-        assertFalse(PathToRoutePair.matchPathToMultistepWildcard(requestedPath, definedPath));
+        ArrayList<String> splat = new ArrayList<>();
+        assertTrue(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), splat));
+
+        String[] expectedSplat = new String[]{"hello", "1/2/3/4"};
+        assertArrayEquals(splat.toArray(), expectedSplat);
+    }
+
+    @Test
+    public void testSplatSingle() {
+        String definedPath = "/*";
+        String requestedPath = "/hello/1/2/3/4";
+
+        ArrayList<String> splat = new ArrayList<>();
+        assertTrue(PathToRoutePair.matchPathToSteps(requestedPath, definedPath, new HashMap<>(), splat));
+
+        String[] expectedSplat = new String[]{"hello/1/2/3/4"};
+        assertArrayEquals(splat.toArray(), expectedSplat);
     }
 }

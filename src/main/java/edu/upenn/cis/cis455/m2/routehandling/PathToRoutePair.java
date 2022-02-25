@@ -2,6 +2,7 @@ package edu.upenn.cis.cis455.m2.routehandling;
 
 import edu.upenn.cis.cis455.m2.interfaces.Route;
 
+import java.util.List;
 import java.util.Map;
 
 public class PathToRoutePair {
@@ -18,62 +19,46 @@ public class PathToRoutePair {
         return route;
     }
 
-    public boolean matchPathToSteps(String path, Map<String, String> pathParams) {
-        String[] pathStepsToMatch = convertPathToSteps(path);
+    public boolean matchPathToSteps(String path, Map<String, String> pathParams, List<String> splat) {
+        return matchPathToSteps(convertPathToSteps(path), this.pathSteps, pathParams, splat);
+    }
 
-        if (this.pathSteps.length != pathStepsToMatch.length) {
+    public static boolean matchPathToSteps(String pathToMatch, String definedPath, Map<String, String> pathParams, List<String> splat) {
+        String[] pathStepsToMatch = convertPathToSteps(pathToMatch);
+        String[] definedPathSteps = convertPathToSteps(definedPath);
+        return matchPathToSteps(pathStepsToMatch, definedPathSteps, pathParams, splat);
+    }
+
+    private static boolean matchPathToSteps(
+            String[] pathStepsToMatch, String[] definedPathSteps, Map<String, String> pathParams, List<String> splat) {
+
+        if (definedPathSteps.length > pathStepsToMatch.length) {
             return false;
         }
 
-        for (int i = 0; i < this.pathSteps.length; i++) {
-            String step = this.pathSteps[i];
+        String definedStep = "";
+        for (int i = 0; i < definedPathSteps.length; i++) {
+            definedStep = definedPathSteps[i];
             String stepToMatch = pathStepsToMatch[i];
-            if (isVariablePathStep(step)) {
-                if (step.startsWith(":")) pathParams.put(step, stepToMatch);
+            if (isVariablePathStep(definedStep)) {
+                if (definedStep.startsWith(":")) pathParams.put(definedStep, stepToMatch);
+                if (definedStep.equals("*") && i < definedPathSteps.length - 1) splat.add(stepToMatch);
             } else {
-                if (!step.equals(stepToMatch)) {
+                if (!definedStep.equals(stepToMatch)) {
                     return false;
                 }
             }
         }
-        return true;
-    }
 
-    public static boolean matchPathToMultistepWildcard(String pathToMatch, String definedPath) {
-        String[] pathToMatchSteps = convertPathToSteps(pathToMatch);
-        String[] definedPathSteps = convertPathToSteps(definedPath);
-        return matchPathStepsToWildcardPath(definedPathSteps, pathToMatchSteps);
-    }
-
-    private static boolean matchPathStepsToWildcardPath(String[] definedPathSteps, String[] pathToMatchSteps) {
-        int definedPathIndex = 0;
-        int pathToMatchIndex = 0;
-        String definedPathStep = definedPathSteps[definedPathIndex];
-        String pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
-        while (definedPathIndex < definedPathSteps.length - 1 && pathToMatchIndex < pathToMatchSteps.length - 1) {
-            if (!definedPathStep.equals("*") && !definedPathStep.equals(pathToMatchStep)) {
-                return false;
-            } else if (!definedPathStep.equals("*")) {
-                definedPathIndex++;
-                definedPathStep = definedPathSteps[definedPathIndex];
-
-                pathToMatchIndex++;
-                pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
-            } else {
-                do {
-                    definedPathIndex++;
-                    definedPathStep = definedPathSteps[definedPathIndex];
-
-                    pathToMatchIndex++;
-                    pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
-                } while (definedPathStep.equals("*") && definedPathIndex < definedPathSteps.length - 1);
-                while (!definedPathStep.equals(pathToMatchStep) && pathToMatchIndex < pathToMatchSteps.length - 1) {
-                    pathToMatchIndex++;
-                    pathToMatchStep = pathToMatchSteps[pathToMatchIndex];
-                }
+        if (definedStep.equals("*")) {
+            StringBuilder lastSplat = new StringBuilder(pathStepsToMatch[definedPathSteps.length - 1]);
+            for (int i = definedPathSteps.length; i < pathStepsToMatch.length; i++) {
+                lastSplat.append("/").append(pathStepsToMatch[i]);
             }
+            splat.add(lastSplat.toString());
         }
-        return definedPathIndex == definedPathSteps.length - 1 && (definedPathStep.equals("*") || (definedPathStep.equals(pathToMatchStep) && pathToMatchIndex == pathToMatchSteps.length - 1));
+
+        return definedStep.equals("*") || definedPathSteps.length == pathStepsToMatch.length;
     }
 
     private static String[] convertPathToSteps(String path) {

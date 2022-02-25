@@ -33,6 +33,7 @@ public class HttpRequest extends Request {
 	private final String body;
 
 	private Map<String, String> pathParams;
+	private String[] splat;
 	private final Map<String, Object> attributes;
 
 	private Session session;
@@ -234,5 +235,13 @@ public class HttpRequest extends Request {
 	@Override
 	public Map<String, String> cookies() {
 		return this.cookies;
+	}
+
+	public String[] splat() {
+		return splat;
+	}
+
+	public void setSplat(String[] splat) {
+		this.splat = splat;
 	}
 }

@@ -14,11 +14,12 @@ public class RouteHandler {
         this.routeList = new ArrayList<>();
     }
 
-    public Route getRoute(String path, Map<String, String> pathParams) {
+    public Route getRoute(String path, Map<String, String> pathParams, List<String> splat) {
         synchronized (routeList) {
             for (PathToRoutePair pathToRoutePair : routeList) {
                 pathParams.clear();
-                if (pathToRoutePair.matchPathToSteps(path, pathParams)) {
+                splat.clear();
+                if (pathToRoutePair.matchPathToSteps(path, pathParams, splat)) {
                     return pathToRoutePair.getRoute();
                 }
             }
