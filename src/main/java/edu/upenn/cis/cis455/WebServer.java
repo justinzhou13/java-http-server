@@ -24,7 +24,7 @@ public class WebServer {
     public static void main(String[] args) {
         org.apache.logging.log4j.core.config.Configurator.setLevel("edu.upenn.cis.cis455", Level.DEBUG);
 
-        threadPool(8);
+        threadPool(4);
         
         // All user routes should go below here...
         if (args.length == 2) {
