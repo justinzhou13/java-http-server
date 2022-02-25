@@ -10,10 +10,7 @@ import edu.upenn.cis.cis455.m2.routehandling.RouteHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static edu.upenn.cis.cis455.m1.handling.HttpComplianceHandler.isCompliant;
 
@@ -80,7 +77,8 @@ public class RequestHandler {
 			Route requestedRoute = getRoute(requestMethod, req.pathInfo(), pathParams, splat);
 			((HttpRequest) req).setPathParams(pathParams);
 			try {
-				((HttpRequest) req).setSplat((String[]) splat.toArray());
+				String[] splatArray = Arrays.stream(splat.toArray()).toArray(String[]::new);
+				((HttpRequest) req).setSplat(splatArray);
 			} catch (ClassCastException e) {
 				logger.error(e);
 				throw new HaltException(500);

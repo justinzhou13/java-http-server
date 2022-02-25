@@ -1,2 +1,13 @@
 Extra-credit done:
 Performance testing - you can find performance.pdf in the /src directory.
+Multi-step wildcard - I've registered a route at GET /*/splat/* that prints the splat parameters in a plaintext response.
+For the request, GET /first/splat/second/third you'd expect a response of:
+```
+Here were the splat params from this request:
+first
+second/third
+```
+To write your own functions and use splat, you'll need to define a route that casts the Request interface into my HttpRequest implementation, like:
+```
+String[] splatContent = ((HttpRequest) request).splat();
+```

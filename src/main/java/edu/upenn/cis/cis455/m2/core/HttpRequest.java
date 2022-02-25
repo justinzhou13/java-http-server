@@ -1,7 +1,6 @@
 package edu.upenn.cis.cis455.m2.core;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
-import edu.upenn.cis.cis455.m1.handling.HttpIoHandler;
 import edu.upenn.cis.cis455.m2.interfaces.Request;
 import edu.upenn.cis.cis455.m2.interfaces.Session;
 import edu.upenn.cis.cis455.m2.session.SessionManager;
@@ -15,7 +14,7 @@ import java.util.Set;
 
 public class HttpRequest extends Request {
 	
-    final static Logger logger = LogManager.getLogger(HttpIoHandler.class);
+    final static Logger logger = LogManager.getLogger(HttpRequest.class);
 	
 	private final String requestMethod;
 	private final String protocol;
@@ -51,6 +50,7 @@ public class HttpRequest extends Request {
 	                   String ip,
 	                   String body) {
 		if (requestMethod == null || protocol == null || pathInfo == null || host == null) {
+			logger.error("Request with null values for request method received");
 			throw new HaltException(400);
 		}
 		this.requestMethod = requestMethod;

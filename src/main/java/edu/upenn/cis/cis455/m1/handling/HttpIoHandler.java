@@ -44,6 +44,7 @@ public class HttpIoHandler {
     	statusCodeToDescription.put(404, "Not Found");
 	    statusCodeToDescription.put(403, "Forbidden");
     	statusCodeToDescription.put(400, "Bad Request");
+	    statusCodeToDescription.put(500, "Internal Server Error");
 	    statusCodeToDescription.put(501, "Not Implemented");
 	    statusCodeToDescription.put(505, "HTTP Version Not Supported");
     }

@@ -1,6 +1,7 @@
 package edu.upenn.cis.cis455;
 
 import edu.upenn.cis.cis455.exceptions.HaltException;
+import edu.upenn.cis.cis455.m2.core.HttpRequest;
 import edu.upenn.cis.cis455.m2.interfaces.Session;
 import org.apache.logging.log4j.Level;
 
@@ -96,6 +97,16 @@ public class WebServer {
 
             response.type("text/plain");
             return out.toString();
+        }));
+
+        get("/*/splat/*", ((request, response) -> {
+            StringBuilder res = new StringBuilder("Here were the splat params from this request: \n");
+            for (String splatItem : ((HttpRequest) request).splat()) {
+                res.append(splatItem).append("\n");
+            }
+
+            response.type("text/plain");
+            return res;
         }));
 
         System.out.println("Waiting to handle requests!");
