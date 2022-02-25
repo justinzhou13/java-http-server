@@ -177,7 +177,10 @@ public class HttpRequest extends Request {
 
 	@Override
 	public Session session(boolean create) {
-		return create ? new WebSession() : this.session;
+		if (create) {
+			this.session = new WebSession();
+		}
+		return this.session;
 	}
 
 	public void setPathParams(Map<String, String> pathParams) {
