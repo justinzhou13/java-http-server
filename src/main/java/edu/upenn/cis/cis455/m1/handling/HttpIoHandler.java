@@ -61,7 +61,20 @@ public class HttpIoHandler {
 	    String host = socket.getInetAddress().getHostName();
 		int port = socket.getLocalPort();
 		String ip = socket.getInetAddress().getHostAddress();
+
 		String body = "";
+	    char[] bodyChars;
+		if (headers.get("content-length") != null) {
+			try {
+				int bodyLength = Integer.parseInt(headers.get("content-length"));
+				bodyChars = new char[bodyLength];
+				in.read(bodyChars, 0, bodyLength);
+				body = String.valueOf(bodyChars);
+			} catch (NumberFormatException e) {
+				logger.error("Content length passed was not a valid number", e);
+			}
+		}
+
 
 	    return buildRequest(
 				host,

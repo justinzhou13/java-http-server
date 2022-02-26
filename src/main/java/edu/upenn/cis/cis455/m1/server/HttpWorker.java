@@ -91,15 +91,15 @@ public class HttpWorker implements Runnable {
 		Request request = null;
 		try {
 			request = HttpIoHandler.parseRequest(socket);
-		} catch (IOException e) {
-			logger.error("Error parsing the request from the socket", e);
-			closeSocket(socket);
-			return;
 		} catch (HaltException e) {
 			logger.error("Halt exception thrown while parsing request", e);
 			if (!HttpIoHandler.sendException(socket, request, e)) {
 				closeSocket(socket);
 			};
+			return;
+		} catch (Exception e) {
+			logger.error("Error parsing the request from the socket", e);
+			closeSocket(socket);
 			return;
 		}
 
