@@ -7,10 +7,7 @@ import edu.upenn.cis.cis455.m2.session.SessionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class HttpRequest extends Request {
 	
@@ -32,7 +29,7 @@ public class HttpRequest extends Request {
 	private final String body;
 
 	private Map<String, String> pathParams;
-	private String[] splat;
+	private String[] splat = new String[0];
 	private final Map<String, Object> attributes;
 
 	private Session session;
@@ -69,6 +66,23 @@ public class HttpRequest extends Request {
 		this.userAgent = userAgent;
 		this.headers = headers;
 		this.queryStringParms = queryStringParms;
+		if (headers.containsKey("content-type") && headers.get("content-type").equals("application/x-www-form-urlencoded")) {
+			String[] params = body.split("&");
+			for (String param : params) {
+				int equalsIndex = param.indexOf("=");
+				if (equalsIndex != -1) {
+					String key = param.substring(0, equalsIndex);
+					String value = param.substring(equalsIndex + 1);
+					List<String> queryParamsForKey = this.queryStringParms.get(key);
+					if (queryParamsForKey == null) {
+						queryParamsForKey = new ArrayList<>();
+					}
+					queryParamsForKey.add(value);
+					this.queryStringParms.put(key, queryParamsForKey);
+				}
+			}
+		}
+
 		this.ip = ip;
 		this.body = body;
 		this.pathParams = new HashMap<>();
@@ -134,7 +148,7 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String contentType() {
-		return headers.get("content-type");
+		return headers.getOrDefault("content-type", "");
 	}
 
 	@Override
@@ -144,23 +158,17 @@ public class HttpRequest extends Request {
 
 	@Override
 	public String body() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.body;
 	}
 
 	@Override
 	public int contentLength() {
-		try {
-			return Integer.parseInt(headers.get("content-length"));
-		} catch (Exception e) {
-			logger.info("No content length found for request");
-		}
-		return 0;
+		return this.body.length();
 	}
 
 	@Override
 	public String headers(String name) {
-		return headers.getOrDefault(name, null);
+		return headers.get(name);
 	}
 
 	@Override
@@ -196,8 +204,8 @@ public class HttpRequest extends Request {
 	@Override
 	public String queryParams(String param) {
 		List<String> paramValues = queryStringParms.get(param);
-		if (paramValues != null) {
-			return paramValues.toString();
+		if (paramValues != null && paramValues.size() > 0) {
+			return paramValues.get(0);
 		}
 		return null;
 	}
@@ -238,7 +246,7 @@ public class HttpRequest extends Request {
 	}
 
 	public String[] splat() {
-		return splat;
+		return this.splat;
 	}
 
 	public void setSplat(String[] splat) {

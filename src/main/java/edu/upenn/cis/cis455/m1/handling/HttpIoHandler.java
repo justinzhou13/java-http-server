@@ -40,10 +40,11 @@ public class HttpIoHandler {
 	    statusCodeToDescription.put(304, "Not Modified");
 	    statusCodeToDescription.put(307, "Temporary Redirect");
 	    statusCodeToDescription.put(308, "Permanent Redirect");
-		statusCodeToDescription.put(412, "Precondition Failed");
-    	statusCodeToDescription.put(404, "Not Found");
-	    statusCodeToDescription.put(403, "Forbidden");
     	statusCodeToDescription.put(400, "Bad Request");
+	    statusCodeToDescription.put(403, "Forbidden");
+	    statusCodeToDescription.put(404, "Not Found");
+	    statusCodeToDescription.put(409, "Conflict");
+	    statusCodeToDescription.put(412, "Precondition Failed");
 	    statusCodeToDescription.put(500, "Internal Server Error");
 	    statusCodeToDescription.put(501, "Not Implemented");
 	    statusCodeToDescription.put(505, "HTTP Version Not Supported");

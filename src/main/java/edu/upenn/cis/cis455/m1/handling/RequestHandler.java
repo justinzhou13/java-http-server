@@ -40,7 +40,6 @@ public class RequestHandler {
 		afterFilters.add(((request, response) -> {
 			Session session = request.session(false);
 			if (session != null) {
-				response.cookie("JSESSIONID", session.id());
 			}
 		}));
 
@@ -58,7 +57,6 @@ public class RequestHandler {
 		}
 	}
 
-	//TODO replace map of routes with route tree
 	public static void applyRoutes(Request req, Response res) throws Exception {
 		logger.info(String.format("Requested %s", req.uri()));
 
@@ -84,26 +82,28 @@ public class RequestHandler {
 				throw new HaltException(500);
 			}
 
+			if (res.status() < 300 || res.status() >= 400) {
+				boolean lookingForFile = requestMethod.equals("GET") && requestedRoute == null;
+				if (lookingForFile) {
+					handleFileRequest(req, res);
+				} else {
+					if (requestedRoute == null) throw new HaltException(404);
 
-			boolean lookingForFile = requestMethod.equals("GET") && requestedRoute == null;
-			if (lookingForFile) {
-				handleFileRequest(req, res);
-			} else {
-				if (requestedRoute == null) throw new HaltException(404);
-
-				try {
-					Object routeResult = requestedRoute.handle(req, res);
-					if (routeResult != null) {
-						res.body(routeResult.toString());
+					try {
+						Object routeResult = requestedRoute.handle(req, res);
+						if (routeResult != null) {
+							res.body(routeResult.toString());
+						}
+					} catch (Exception e){
+						logger.error(e.getMessage());
+						throw new HaltException(500);
 					}
-				} catch (Exception e){
-					logger.error(e.getMessage());
-					throw new HaltException(500);
 				}
 			}
 		}
 		//TODO figure out if this is actually the desired behavior
 		applyAfterFilters(req, res);
+		addCookieHeader(req, res);
 	}
 
 	public static void handleFileRequest(Request req, Response res) throws Exception {
@@ -222,7 +222,16 @@ public class RequestHandler {
 
 		((HttpRequest) request).setPathParams(pathParams);
 		for (Filter filter : filtersList) {
-			filter.handle(request, response);
+			if (response.status() < 300 || response.status() >= 400) {
+				filter.handle(request, response);
+			}
+		}
+	}
+
+	private static void addCookieHeader(Request req, Response res) {
+		Session session = req.session(false);
+		if (session != null) {
+			res.cookie("JSESSIONID", session.id());
 		}
 	}
 }

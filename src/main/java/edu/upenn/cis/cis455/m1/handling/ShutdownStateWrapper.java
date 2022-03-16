@@ -11,7 +11,7 @@ import java.net.ServerSocket;
 
 public class ShutdownStateWrapper {
 
-    final static Logger logger = LogManager.getLogger(WebService.class);
+    final static Logger logger = LogManager.getLogger(ShutdownStateWrapper.class);
 
     private static boolean shouldShutDown;
     private static ServerSocket serverSocket;

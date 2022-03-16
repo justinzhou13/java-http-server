@@ -129,6 +129,15 @@ public class SparkController {
         }
     }
 
+    public static void before(String path1, String path2, Filter... filters) {
+            if (filters != null) {
+                for (Filter filter : filters) {
+                    webService.before(path1, filter);
+                    webService.before(path2, filter);
+                }
+            }
+    }
+
     /**
      * Milestone 2 only: Add filters that get called after a request
      */
