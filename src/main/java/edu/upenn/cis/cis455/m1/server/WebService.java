@@ -145,7 +145,7 @@ public class WebService {
      * Triggers a HaltException that terminates the request
      */
     public HaltException halt() {
-        throw new HaltException();
+        throw new HaltException(500);
     }
 
     /**
